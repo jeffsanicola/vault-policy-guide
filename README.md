@@ -15,10 +15,27 @@ Vault's Access Control List (ACL) policies specify a set of rules to apply to on
 Policies are written in HashiCorp Configuration Language (HCL) files. Basic policies consist of three things:
 
 * A name (must be lower-case)
-* A path
+* A path (case sensitive)
 * One or more "capabilities"
 
-Paths must match valid folders or API endpoints to be effective.
+Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) endpoints to be effective.
+
+>**Note**
+>
+>HashiCorp's documentation often uses default names for secret engine mounts (e.g., `secret`).
+>
+>>**Helpful Hint!**
+>>
+>>I often see Vault novices assume that `secret` is a root path for all secret engine mounts, which is incorrect. The name you provide for your secret engine mount is the root of your ACL path.
+>
+>If you customize your secret mount (e.g., `kv` or `my_kv`, etc.) then you need to make the corrsponding changes in your ACL policies.
+>
+>```hcl
+>path "kv/*" { # <-- Use your chosen secret mount name here
+>  capabilities = ["create", "read", "update" "delete", "list"]  
+>}
+>```
+>
 
 Capabilities are a superset of CRUD operations:
 
