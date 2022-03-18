@@ -30,14 +30,14 @@ Capabilities are a superset of CRUD operations:
 * `deny` - disallows access to the endpoint or folder - **avoid using this unless absolutely required**
 * `sudo` - allows for elevating privilege for specific commands (only required in a small subset of endpoints)
 
-Example
-
-```hcl
-# Allow reading and writing of any secret within the "secret" mount
-path "secret/*" {
-  capabilities = ["create", "read", "update", "delete", "list"]
-}
-```
+>**Example**
+>
+>```hcl
+># Allow reading and writing of any secret within the "secret" mount
+>path "secret/*" {
+>  capabilities = ["create", "read", "update", "delete", "list"]
+>}
+>```
 
 More advanced policies ([Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control)) can control which attributes can be written to as well as some limited content enforcement. Note that these Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault (or content enforcement can be built into your workflow, if feasible).
 
@@ -48,7 +48,7 @@ More advanced policies ([Fine-Grained Control Policies](https://www.vaultproject
 API endpoints that end with a `/` are considered a folder and only require the `read` or `list` capabilities.
 Other endpoints will usually accept `create`, `read`, `update`, and `delete`. Some endpoints may require `sudo` for related commands to succeed, like the `sys/audit/*` endpoints. However, some endpoints only support a subset of these functions. Consult the API guide for specific capabilities applicable to the path in question.
 
-When referencing the API guide you'll come across different REST methods: GET, POST, PUT, DELETE, and LIST. Their capability equivalents are as follows:
+When referencing the API guide you'll come across different REST methods: `GET`, `POST`, `PUT`, `DELETE`, and `LIST`. Their capability equivalents are as follows:
 
 |REST Method|Capability|
 |-----------|----------|
@@ -58,7 +58,7 @@ When referencing the API guide you'll come across different REST methods: GET, P
 |DELETE     |delete    |
 |LIST       |list      |
 
-> Note: The LIST method is supported by select utilities, such as `curl`. Other utilities, such as PowerShell's Invoke-RestMethod only support the GET method. To list a folder where LIST isn't supported, use the GET method and append `?list=true` to the URI.
+> Note: The `LIST` method is supported by select utilities, such as `curl`. Other utilities, such as PowerShell's Invoke-RestMethod only support the `GET` method. To list a folder where `LIST` isn't supported, use the `GET` method and append `?list=true` to the URI.
 
 ### Inheritance
 
@@ -86,24 +86,28 @@ If a secret already exists, the call will succeed. Otherwise a 403 will be retur
 
 Vault applies the most specific policy that matches the path. Policies do not accumulate as you traverse the folder structure.
 
-If you want to be able to list folders in the `abc` folder but also write secrets in the `123` folder, then a policy like the following would be required:
-
-```hcl
-# Allow listing content in the secret mount.
-path "secret/" {
-  capabilities = ["read", "list"]
-}
-
-# Allow listing of secrets in the abc folder
-path "secret/abc/" {
-  capabilities = ["read", "list"]
-}
-
-# Allow reading and writing of secrets in the abc/123 folder
-path "secret/abc/123/*" {
-  capabilities = ["create", "read", "update", "delete", "list"]
-}
-```
+> **Helpful Hint!**
+>
+>If you want to be able to list folders in the `abc` folder but also write secrets in the `123` folder, then a policy like the following would be required:
+>
+>```hcl
+># Allow listing content in the secret mount.
+>path "secret/" {
+>  capabilities = ["read", "list"]
+>}
+>
+># Allow listing of secrets in the abc folder
+>path "secret/abc/" {
+>  capabilities = ["read", "list"]
+>}
+>
+># Allow reading and writing of secrets in the abc/123 folder
+>path "secret/abc/123/*" {
+>  capabilities = ["create", "read", "update", "delete", "list"]
+>}
+>```
+>
+>
 
 ### Wildcards
 
@@ -139,81 +143,77 @@ Suppose you have multiple policies assigned to your token with different capabil
 
 Let's look at a few examples:
 
-**Example 1**
+>**Example 1**
+>
+>```hcl
+>path "secret/abc/123/*" {
+>  capabilities = ["read"]
+>}
+>```
+>
+>and
+>
+>```hcl
+>path "secret/abc/123/*" {
+>  capabilities = ["update"]
+>}
+>```
+>
+>If both of these policies are applied then the token is able to perform the cumulative actions provided in the policies - `read` and `update`, in this case.
 
-```hcl
-path "secret/abc/123/*" {
-  capabilities = ["read"]
-}
-```
+>**Example 2**
+>
+>```hcl
+>path "secret/abc/123/*" {
+>  capabilities = ["read"]
+>}
+>```
+>
+>and
+>
+>```hcl
+>path "secret/abc/123/*" {
+>  capabilities = ["deny"]
+>}
+>```
+>
+>In this case the `deny` capability takes priority over any other capability in this path and any interaction will result in a 403 error.
 
-and
+>**Example 3**
+>
+>```hcl
+>path "secret/abc/*" {
+>  capabilities = ["read"]
+>}
+>```
+>
+>and
+>
+>```hcl
+>path "+/abc/*" {
+>  capabilities = ["create", "read", "update", "delete"]
+>}
+>```
+>
+>The `read` capability would win in this case as it is the most specific policy.
 
-```hcl
-path "secret/abc/123/*" {
-  capabilities = ["update"]
-}
-```
-
-
-If both of these policies are applied then the token is able to perform the cumulative actions provided in the policies - `read` and `update`, in this case.
-
-**Example 2**
-
-```hcl
-path "secret/abc/123/*" {
-  capabilities = ["read"]
-}
-```
-
-and
-
-```hcl
-path "secret/abc/123/*" {
-  capabilities = ["deny"]
-}
-```
-
-
-In this case the `deny` capability takes priority over any other capability in this path and any interaction will result in a 403 error.
-
-**Example 3**
-
-```hcl
-path "secret/abc/*" {
-  capabilities = ["read"]
-}
-```
-
-and
-
-```hcl
-path "+/abc/*" {
-  capabilities = ["create", "read", "update", "delete"]
-}
-```
-
-
-The `read` capability would win in this case as it is the most specific policy.
-
-**Example 4**
-
-```hcl
-path "secret/+/*" {
-  capabilities = ["read"]
-}
-```
-
-and
-
-```hcl
-path "+/abc/*" {
-  capabilities = ["create", "read", "update", "delete"]
-}
-```
-
-
-The `read` capability would also win in this case as it is still the most specific policy. The `+` wildcard at the beginning of the second path makes it less specific as it can apply to any mount as opposed to only the "secret" mount.
+>**Example 4**
+>
+>```hcl
+>path "secret/+/*" {
+>  capabilities = ["read"]
+>}
+>```
+>
+>and
+>
+>```hcl
+>path "+/abc/*" {
+>  capabilities = ["create", "read", "update", "delete"]
+>}
+>```
+>
+>The `read` capability would also win in this case as it is still the most specific policy. The `+` wildcard at the beginning of the second path makes it less specific as it can apply to any mount as opposed to only the "secret" mount.
 
 ### Templated Policies
 
@@ -221,45 +221,44 @@ Vault supports a method of dynamic pathing, called [Templated Policies](https://
 
 For instance, if you leverage [Vault's Identity secrets engine](https://www.vaultproject.io/docs/secrets/identity) and [pre-populate the entities with specific metadata](https://www.vaultproject.io/api-docs/secret/identity/entity#create-an-entity) such as a department, app, or team identifier. You could leverage the information to build a single policy the will be unique for every authenticating entity.
 
-Example
-
-Suppose you have two entities, both with a metadata attribute called "app" and each entity has a unique value. You could construct a policy similar to the following:
-
-```hcl
-# Allow listing root of secret mount
-path "secret/" {
-  capabilities = ["read", "list"]
-}
-
-# Allow listing of folder matching app name
-path "secret/{{ identity.entity.metadata.app }}/" {
-  capabilities = ["read", "list"]
-}
-
-# Allow management of secrets within the folder matching the app name
-path "secret/{{ identity.entity.metadata.app }}/*" {
-  capabilities = ["create", "read", "update", "delete", "list"]
-}
-```
-
-For an entity that logs into Vault that has an app attribute called "my_app", the effective policy would be:
-
-```hcl
-# Allow listing root of secret mount
-path "secret/" {
-  capabilities = ["read", "list"]
-}
-
-# Allow listing of folder matching app name
-path "secret/my_app/" {
-  capabilities = ["read", "list"]
-}
-
-# Allow management of secrets within the folder matching the app name
-path "secret/my_app/*" {
-  capabilities = ["create", "read", "update", "delete", "list"]
-}
-```
+>**Example**
+>
+>Suppose you have two entities, both with a metadata attribute called "app" and each entity has a unique value. You could construct a policy similar to the following:
+>
+>```hcl
+># Allow listing root of secret mount
+>path "secret/" {
+>  capabilities = ["read", "list"]
+>
+># Allow listing of folder matching app name
+>path "secret/{{ identity.entity.metadata.app }}/" {
+>  capabilities = ["read", "list"]
+>}
+>
+># Allow management of secrets within the folder matching the app name
+>path "secret/{{ identity.entity.metadata.app }}/*" {
+>  capabilities = ["create", "read", "update", "delete", "list"]
+>}
+>```
+>
+>For an entity that logs into Vault that has an app attribute called "my_app", the effective policy would be:
+>
+>```hcl
+># Allow listing root of secret mount
+>path "secret/" {
+>  capabilities = ["read", "list"]
+>}
+>
+># Allow listing of folder matching app name
+>path "secret/my_app/" {
+>  capabilities = ["read", "list"]
+>}
+>
+># Allow management of secrets within the folder matching the app name
+>path "secret/my_app/*" {
+>  capabilities = ["create", "read", "update", "delete", "list"]
+>}
+>```
 
 ## Policy Design
 
