@@ -414,6 +414,8 @@ path "secret/destroy/abc/*" {
 }
 ```
 
+[Templated Policies](#templated-policies) can be used along with this example to make management of your KVv2 policies simple while also providing very granular access.
+
 ### GUI Friendly Policies
 
 Building policies to support the GUI takes some additional effort. Most of the examples used in this guide are GUI friendly. However, here are a few tips to help ensure the experience is adequate for your users:
