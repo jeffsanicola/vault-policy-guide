@@ -61,7 +61,7 @@ Capabilities are a superset of CRUD operations:
 > }
 > ```
 >
-> Note: See KV Policies section below for guidance around KVv1 and KVv2 policies.
+> **Note:** See KV Policies section below for guidance around KVv1 and KVv2 policies.
 
 More advanced policies, such as [Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control), can control which attributes can be written to as well as some limited content enforcement. Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault, or content enforcement can be built into your workflow, if feasible.
 
@@ -419,6 +419,6 @@ path "secret/destroy/abc/*" {
 Building policies to support the GUI takes some additional effort. Most of the examples used in this guide are GUI friendly. However, here are a few tips to help ensure the experience is adequate for your users:
 
 - If you want to prevent access to secrets in specific sub-paths you'll need to grant list on each parent folder in the hierarchy individually to allow navigation.
-- The URIs in the address bar are not necessarily the paths you need to put in your ACLs. Consult the [API guide](https://www.vaultproject.io/api-docs/index) for the required paths
+- The URIs in the address bar are not necessarily the paths you need to put in your ACLs. Consult the [API guide](https://www.vaultproject.io/api-docs/index) for the required paths.
 - The GUI may attempt to display more things than you realize. When viewing Database roles, for instance, both dynamic and static roles are displayed. Permission to list both [dynamic](https://www.vaultproject.io/api-docs/secret/databases#list-roles) and [static](https://www.vaultproject.io/api-docs/secret/databases#list-static-roles) roles may be required.
 - If you're getting 403 Access Denied messages and can't figure out why, make sure you have an [Audit Device](https://www.vaultproject.io/docs/audit) configured and then review the logs for "permission denied" messages. The request path and operation, along with the policies attached to the in-use token, will be detailed in the record. If you're 100% sure your ACL rule covers the path and operation, make sure you don't have any conflicting rules (such as an explicit deny or more specific rule without the required permission). If there are no conflicts, try adding the `sudo` capability. I've found a couple instances where this is required but not documented (usually only needed in the `sys/` paths).
