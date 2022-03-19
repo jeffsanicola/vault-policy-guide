@@ -10,6 +10,12 @@ This document reflects my own experiences and is not endorsed by HashiCorp in an
 
 Vault's Access Control List (ACL) policies specify a set of rules to apply to one or more paths. Policies, by themselves, do nothing. Policies are only meaningful when assigned to a token, entity, or group.
 
+>**Helpful Hint!**
+>
+>ACL policies are "default deny", meaning that access is not granted unless explicity defined in an assigned policy.
+>
+>Use this to your advantage when designing for "least privileged" access.
+
 ### Policy Construction
 
 Policies are written in HashiCorp Configuration Language (HCL) files. Basic policies consist of three things:
@@ -20,11 +26,11 @@ Policies are written in HashiCorp Configuration Language (HCL) files. Basic poli
 
 Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) endpoints to be effective.
 
->**Note**
+>**Helpful Hint!**
 >
 >HashiCorp's documentation often uses default names for secret engine mounts (e.g., `secret`).
 >
->>**Helpful Hint!**
+>>**Note**
 >>
 >>I often see Vault novices assume that `secret` is a root path for all secret engine mounts, which is incorrect. The name you provide for your secret engine mount is the root of your ACL path.
 >
@@ -56,7 +62,7 @@ Capabilities are a superset of CRUD operations:
 >}
 >```
 
-More advanced policies ([Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control)) can control which attributes can be written to as well as some limited content enforcement. Note that these Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault (or content enforcement can be built into your workflow, if feasible).
+More advanced policies, such as [Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control), can control which attributes can be written to as well as some limited content enforcement. Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault, or content enforcement can be built into your workflow, if feasible.
 
 ## Policy Pathing
 
@@ -67,15 +73,17 @@ Other endpoints will usually accept `create`, `read`, `update`, and `delete`. So
 
 When referencing the API guide you'll come across different REST methods: `GET`, `POST`, `PUT`, `DELETE`, and `LIST`. Their capability equivalents are as follows:
 
-|REST Method|Capability|
-|-----------|----------|
-|GET        |read      |
+|REST Method|Capability    |
+|-----------|--------------|
+|GET        |read          |
 |POST       |create, update|
 |PUT        |create, update|
-|DELETE     |delete    |
-|LIST       |list      |
+|DELETE     |delete        |
+|LIST       |list          |
 
-> Note: The `LIST` method is supported by select utilities, such as `curl`. Other utilities, such as PowerShell's Invoke-RestMethod only support the `GET` method. To list a folder where `LIST` isn't supported, use the `GET` method and append `?list=true` to the URI.
+>**Helpful Hint!**
+>
+>The `LIST` method is supported by select utilities, such as `curl`. Other utilities, such as PowerShell's Invoke-RestMethod only support the `GET` method. To list a folder where `LIST` isn't supported, use the `GET` method and append `?list=true` to the URI.
 
 ### Inheritance
 
@@ -84,10 +92,12 @@ Policy inheritance doesn't really exist in Vault. However, if you're like me  wh
 Consider the following policy:
 
 ```hcl
+# Allow read access on secrets in "abc" folder
 path "secret/abc/*" {
   capabilities = ["read", "list"]
 }
 
+# Allow write access in "abc/123" folder
 path "secret/abc/123/*" {
   capabilities = ["update"]
 }
@@ -104,6 +114,10 @@ If a secret already exists, the call will succeed. Otherwise a 403 will be retur
 Vault applies the most specific policy that matches the path. Policies do not accumulate as you traverse the folder structure.
 
 > **Helpful Hint!**
+>
+>>**Note**
+>>
+>>As of version 1.9, HashiCorp Vault does not support Access Based Enumeration (ABE). You can restrict which folders or secrets a token can access within a folder. Listing, however, is all-or-nothing within a particular folder. If this is unacceptable in your environment then consider setting up multiple KV mounts as these are hidden by default if your token does not have access. Keep in mind that there are a [finite number of mounts](https://www.vaultproject.io/docs/internals/limits#mount-point-limits) that can be created.
 >
 >If you want to be able to list folders in the `abc` folder but also write secrets in the `123` folder, then a policy like the following would be required:
 >
@@ -124,7 +138,6 @@ Vault applies the most specific policy that matches the path. Policies do not ac
 >}
 >```
 >
->
 
 ### Wildcards
 
@@ -138,19 +151,21 @@ Invalid - `secret/*/123` - The glob character is only allowed at the end of a pa
 
 Invalid - `secret/a*c` - The glob character is only allowed at the end of a path
 
-There is another option that behaves a bit more like a traditional wildcard: the `+` character. The `+` character can substitute any full path component but not other partial parts of a path. The `+` character may also be used at the end of a path.
+There is another option that behaves a bit more like a traditional wildcard in that it can be placed elsewhere in the path: the `+` character. The `+` character can substitute any full path component but not other partial parts of a path. The `+` character may also be used at the end of a path.
 
 Valid - `secret/+/123` - Allows access to the `123` secret in any single parent folder (i.e., A secret `secret/abc/def/123` would not be allowed)
 
 Valid - `secret/abc/+` - Allows access to any secret directly in the `abc` folder
 
-Valid - `secret/+/*` - Allows access to any secret that exists in any subfolder of the secret mount.
+Valid - `secret/+/*` - Allows access to any secret that exists in any subfolder of the secret engine mount.
 
-Invalid - `secret/ab+/*` - The `+` character must be the only character between the `/`s
+Valid - `+/abc/123` - Allows access to secret `abc/123` in any secret engine mount.
+
+Invalid - `secret/ab+/*` - The `+` character must be the only character between the `/`'s.
 
 ### Conflicting Policies
 
-In general there are a few rules to keep in mind:
+In general, there are a few rules to keep in mind:
 
 * The most specific policy will take priority
 * If two policies are the same specificity then the resulting capabilities will be cumulative
@@ -258,7 +273,7 @@ For instance, if you leverage [Vault's Identity secrets engine](https://www.vaul
 >}
 >```
 >
->For an entity that logs into Vault that has an app attribute called "my_app", the effective policy would be:
+>For an entity that logs into Vault that has an "app" attribute called "my_app", the effective policy would be:
 >
 >```hcl
 ># Allow listing root of secret mount
