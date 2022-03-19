@@ -14,47 +14,59 @@ Vault's Access Control List (ACL) policies specify a set of rules to apply to on
 
 Policies are written in HashiCorp Configuration Language (HCL) files. Basic policies consist of three things:
 
-* A name (must be lower-case)
-* A path (case sensitive)
-* One or more "capabilities"
+-   A name (must be lower-case)
+-   A path (case sensitive)
+-   One or more "capabilities"
 
 Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) endpoints to be effective.
 
->**Note**
+> **Note**
 >
->HashiCorp's documentation often uses default names for secret engine mounts (e.g., `secret`).
+> HashiCorp's documentation often uses default names for secret engine mounts (e.g., `secret`).
 >
->>**Helpful Hint!**
->>
->>I often see Vault novices assume that `secret` is a root path for all secret engine mounts, which is incorrect. The name you provide for your secret engine mount is the root of your ACL path.
+> > **Helpful Hint!**
+> >
+> > I often see Vault novices assume that `secret` is a root path for all secret engine mounts, which is incorrect. The name you provide for your secret engine mount is the root of your ACL path.
 >
->If you customize your secret mount (e.g., `kv` or `my_kv`, etc.) then you need to make the corrsponding changes in your ACL policies.
+> If you customize your secret mount (e.g., `kv` or `my_kv`, etc.) then you need to make the corrsponding changes in your ACL policies.
 >
->```hcl
->path "kv/*" { # <-- Use your chosen secret mount name here
->  capabilities = ["create", "read", "update" "delete", "list"]  
->}
->```
+> for KV (version 1):
 >
+> ```hcl
+> path "kv/*" { # <-- Use your chosen secret mount name here
+>  capabilities = ["create", "read", "update" "delete", "list"]
+> }
+> ```
+>
+> For KV-v2 (version 2, /data/ is required for the path, /metadata is added for the versions of the secrets -- also required for access to the UI)
+>
+> ```hcl
+> path "kv/data/*" { # <-- Use your chosen secret mount name here
+>  capabilities = ["create", "read", "update" "delete", "list"]
+> }
+> path "kv/metadata" {
+>  capablities = [ "read", "list" ]
+> }
+> ```
 
 Capabilities are a superset of CRUD operations:
 
-* `create` - allows the creation of a resource that doesn't currently exist
-* `read` - allows reading or listing of a particular resource or collection of resources
-* `update` - allows the updating of an already existing resource
-* `delete` - allows the removal of resource
-* `list` - allows for listing the content of a folder
-* `deny` - disallows access to the endpoint or folder - **avoid using this unless absolutely required**
-* `sudo` - allows for elevating privilege for specific commands (only required in a small subset of endpoints)
+-   `create` - allows the creation of a resource that doesn't currently exist
+-   `read` - allows reading or listing of a particular resource or collection of resources
+-   `update` - allows the updating of an already existing resource
+-   `delete` - allows the removal of resource
+-   `list` - allows for listing the content of a folder
+-   `deny` - disallows access to the endpoint or folder - **avoid using this unless absolutely required**
+-   `sudo` - allows for elevating privilege for specific commands (only required in a small subset of endpoints) - As a general rule, eliminate the use of `sudo` in your user policies unless absolutely required.
 
->**Example**
+> **Example**
 >
->```hcl
-># Allow reading and writing of any secret within the "secret" mount
->path "secret/*" {
+> ```hcl
+> # Allow reading and writing of any secret within the "secret" mount
+> path "secret/*" {
 >  capabilities = ["create", "read", "update", "delete", "list"]
->}
->```
+> }
+> ```
 
 More advanced policies ([Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control)) can control which attributes can be written to as well as some limited content enforcement. Note that these Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault (or content enforcement can be built into your workflow, if feasible).
 
@@ -65,21 +77,22 @@ More advanced policies ([Fine-Grained Control Policies](https://www.vaultproject
 API endpoints that end with a `/` are considered a folder and only require the `read` or `list` capabilities.
 Other endpoints will usually accept `create`, `read`, `update`, and `delete`. Some endpoints may require `sudo` for related commands to succeed, like the `sys/audit/*` endpoints. However, some endpoints only support a subset of these functions. Consult the API guide for specific capabilities applicable to the path in question.
 
-When referencing the API guide you'll come across different REST methods: `GET`, `POST`, `PUT`, `DELETE`, and `LIST`. Their capability equivalents are as follows:
+When referencing the API guide you'll come across different REST methods: `GET`, `PATCH`, `POST`, `PUT`, `DELETE`, and `LIST`. Their capability equivalents are as follows:
 
-|REST Method|Capability|
-|-----------|----------|
-|GET        |read      |
-|POST       |create, update|
-|PUT        |create, update|
-|DELETE     |delete    |
-|LIST       |list      |
+| REST Method | Capability     |
+| ----------- | -------------- |
+| GET         | read           |
+| PATCH       | update         |
+| POST        | create, update |
+| PUT         | create, update |
+| DELETE      | delete         |
+| LIST        | list           |
 
 > Note: The `LIST` method is supported by select utilities, such as `curl`. Other utilities, such as PowerShell's Invoke-RestMethod only support the `GET` method. To list a folder where `LIST` isn't supported, use the `GET` method and append `?list=true` to the URI.
 
 ### Inheritance
 
-Policy inheritance doesn't really exist in Vault. However, if you're like me  when I started out, you may have some bad assumptions derived from experience with other products.
+Policy inheritance doesn't really exist in Vault. However, if you're like me when I started out, you may have some bad assumptions derived from experience with other products.
 
 Consider the following policy:
 
@@ -96,7 +109,7 @@ path "secret/abc/123/*" {
 If you try to read `secret/abc/123/my_secret`, what will happen?
 If you said you'll get a 403 Access Denied, you'd be right!
 
-The `read` and `list` capabilities are overridden by the `update` capability on the more specific path.
+The `read` and `list` capabilities are overridden by the `update` capability on the more specific path.<!-- this need more explanatin as you still need read and list to get the existing secret, but technically yes, having update does override the permissions -->
 
 Now what if you try to write to the same path?
 If a secret already exists, the call will succeed. Otherwise a 403 will be returned.
@@ -105,26 +118,24 @@ Vault applies the most specific policy that matches the path. Policies do not ac
 
 > **Helpful Hint!**
 >
->If you want to be able to list folders in the `abc` folder but also write secrets in the `123` folder, then a policy like the following would be required:
+> If you want to be able to list folders in the `abc` folder but also write secrets in the `123` folder, then a policy like the following would be required:
 >
->```hcl
-># Allow listing content in the secret mount.
->path "secret/" {
+> ```hcl
+> # Allow listing content in the secret mount.
+> path "secret/" {
 >  capabilities = ["read", "list"]
->}
+> }
 >
-># Allow listing of secrets in the abc folder
->path "secret/abc/" {
+> # Allow listing of secrets in the abc folder
+> path "secret/abc/" {
 >  capabilities = ["read", "list"]
->}
+> }
 >
-># Allow reading and writing of secrets in the abc/123 folder
->path "secret/abc/123/*" {
+> # Allow reading and writing of secrets in the abc/123 folder
+> path "secret/abc/123/*" {
 >  capabilities = ["create", "read", "update", "delete", "list"]
->}
->```
->
->
+> }
+> ```
 
 ### Wildcards
 
@@ -133,6 +144,8 @@ The `*` character may look and behave like a traditional wildcard at first, howe
 Valid - `secret/abc/*` - Allows access to any secret of folder within the `abc` folder
 
 Valid - `secret/abc/1*` - Allows access to any secret or folder with a name beginning with `1` within the `abc` folder
+
+Valid - `secret/+/mysecret` - Allows access to the secret `mysecret` under secret/ and one exactly other folder
 
 Invalid - `secret/*/123` - The glob character is only allowed at the end of a path
 
@@ -152,85 +165,85 @@ Invalid - `secret/ab+/*` - The `+` character must be the only character between 
 
 In general there are a few rules to keep in mind:
 
-* The most specific policy will take priority
-* If two policies are the same specificity then the resulting capabilities will be cumulative
-* The `deny` capability takes priority over all other capabilities
+-   The most specific policy will take priority
+-   If two policies are the same specificity then the resulting capabilities will be cumulative
+-   The `deny` capability takes priority over all other capabilities
 
 Suppose you have multiple policies assigned to your token with different capabilities, what would happen?
 
 Let's look at a few examples:
 
->**Example 1**
+> **Example 1**
 >
->```hcl
->path "secret/abc/123/*" {
+> ```hcl
+> path "secret/abc/123/*" {
 >  capabilities = ["read"]
->}
->```
+> }
+> ```
 >
->and
+> and
 >
->```hcl
->path "secret/abc/123/*" {
+> ```hcl
+> path "secret/abc/123/*" {
 >  capabilities = ["update"]
->}
->```
+> }
+> ```
 >
->If both of these policies are applied then the token is able to perform the cumulative actions provided in the policies - `read` and `update`, in this case.
+> If both of these policies are applied then the token is able to perform the cumulative actions provided in the policies - `read` and `update`, in this case.
 
->**Example 2**
+> **Example 2**
 >
->```hcl
->path "secret/abc/123/*" {
+> ```hcl
+> path "secret/abc/123/*" {
 >  capabilities = ["read"]
->}
->```
+> }
+> ```
 >
->and
+> and
 >
->```hcl
->path "secret/abc/123/*" {
+> ```hcl
+> path "secret/abc/123/*" {
 >  capabilities = ["deny"]
->}
->```
+> }
+> ```
 >
->In this case the `deny` capability takes priority over any other capability in this path and any interaction will result in a 403 error.
-
->**Example 3**
+> In this case the `deny` capability takes priority over any other capability in this path and any interaction will result in a 403 error.
+> 
+> **Example 3**
 >
->```hcl
->path "secret/abc/*" {
+> ```hcl
+> path "secret/abc/*" {
 >  capabilities = ["read"]
->}
->```
+> }
+> ```
 >
->and
+> and
 >
->```hcl
->path "+/abc/*" {
+> ```hcl
+> path "+/abc/*" {
 >  capabilities = ["create", "read", "update", "delete"]
->}
->```
+> }
+> ```
 >
->The `read` capability would win in this case as it is the most specific policy.
+> The `read` capability would win in this case as it is the most specific policy.
 
->**Example 4**
+> **Example 4**
 >
->```hcl
->path "secret/+/*" {
+> ```hcl
+> path "secret/+/*" {
 >  capabilities = ["read"]
->}
->```
+> }
+> ```
 >
->and
+> and
 >
->```hcl
->path "+/abc/*" {
+> ```hcl
+> path "+/abc/*" {
 >  capabilities = ["create", "read", "update", "delete"]
->}
->```
+> }
+> ```
 >
->The `read` capability would also win in this case as it is still the most specific policy. The `+` wildcard at the beginning of the second path makes it less specific as it can apply to any mount as opposed to only the "secret" mount.
+> The `read` capability would also win in this case as it is still the most specific policy. The `+` wildcard at the beginning of the second path makes it less specific as it can apply to any mount as opposed to only the "secret" mount.
 
 ### Templated Policies
 
@@ -238,44 +251,46 @@ Vault supports a method of dynamic pathing, called [Templated Policies](https://
 
 For instance, if you leverage [Vault's Identity secrets engine](https://www.vaultproject.io/docs/secrets/identity) and [pre-populate the entities with specific metadata](https://www.vaultproject.io/api-docs/secret/identity/entity#create-an-entity) such as a department, app, or team identifier. You could leverage the information to build a single policy the will be unique for every authenticating entity.
 
->**Example**
+See [policy-templating](https://learn.hashicorp.com/tutorials/vault/policy-templating#available-templating-parameters) for other variables allowed to be used in policies.
+
+> **Example**
 >
->Suppose you have two entities, both with a metadata attribute called "app" and each entity has a unique value. You could construct a policy similar to the following:
+> Suppose you have two entities, both with a metadata attribute called "app" and each entity has a unique value. You could construct a policy similar to the following:
 >
->```hcl
-># Allow listing root of secret mount
->path "secret/" {
+> ```hcl
+> # Allow listing root of secret mount
+> path "secret/" {
 >  capabilities = ["read", "list"]
 >
-># Allow listing of folder matching app name
->path "secret/{{ identity.entity.metadata.app }}/" {
+> # Allow listing of folder matching app name
+> path "secret/{{ identity.entity.metadata.app }}/" {
 >  capabilities = ["read", "list"]
->}
+> }
 >
-># Allow management of secrets within the folder matching the app name
->path "secret/{{ identity.entity.metadata.app }}/*" {
+> # Allow management of secrets within the folder matching the app name
+> path "secret/{{ identity.entity.metadata.app }}/*" {
 >  capabilities = ["create", "read", "update", "delete", "list"]
->}
->```
+> }
+> ```
 >
->For an entity that logs into Vault that has an app attribute called "my_app", the effective policy would be:
+> For an entity that logs into Vault that has an app attribute called "my_app", the effective policy would be:
 >
->```hcl
-># Allow listing root of secret mount
->path "secret/" {
+> ```hcl
+> # Allow listing root of secret mount
+> path "secret/" {
 >  capabilities = ["read", "list"]
->}
+> }
 >
-># Allow listing of folder matching app name
->path "secret/my_app/" {
+> # Allow listing of folder matching app name
+> path "secret/my_app/" {
 >  capabilities = ["read", "list"]
->}
+> }
 >
-># Allow management of secrets within the folder matching the app name
->path "secret/my_app/*" {
+> # Allow management of secrets within the folder matching the app name
+> path "secret/my_app/*" {
 >  capabilities = ["create", "read", "update", "delete", "list"]
->}
->```
+> }
+> ```
 
 ## Policy Design
 
@@ -291,10 +306,10 @@ path "*" {
 
 While this will obviously work, this grants an excessive amount of permission to the administrators, in my opinion. Some things that I like to keep in mind when writing my own admin policies:
 
-* Administrators should NOT be able to view or generate secrets they aren't explicitly authorized to
-* Administrators should NOT be able to arbitrarily change critical system settings (e.g., audit config, auth mount settings, etc.)
-* Administrators should be able to observe configured components (e.g., mounts, roles, audit devices, etc.)
-* Administrators should be able to resolve common problems that users run into (e.g., resetting an AWS auth IAM role association, for instance)
-* Administrators should be able to run commands to maintain the stability of the Vault environment (e.g., using the `sys/step-down` API endpoint to transfer the leader role to another node)
+-   Administrators should NOT be able to view or generate secrets they aren't explicitly authorized to
+-   Administrators should NOT be able to arbitrarily change critical system settings (e.g., audit config, auth mount settings, etc.)
+-   Administrators should be able to observe configured components (e.g., mounts, roles, audit devices, etc.)
+-   Administrators should be able to resolve common problems that users run into (e.g., resetting an AWS auth IAM role association, for instance)
+-   Administrators should be able to run commands to maintain the stability of the Vault environment (e.g., using the `sys/step-down` API endpoint to transfer the leader role to another node)
 
 Being mindful of the activities your administrators will and should perform will help reduce the overall risk imposed by higher privileged accounts.
