@@ -1,6 +1,6 @@
 # Vault ACL Policies
 
-After struggling a bit with [ACL policies](https://www.vaultproject.io/docs/concepts/policies) early on in my experience with HashiCorp Vault and helping newcomers to Vault in the [community forums](https://discuss.hashicorp.com/c/vault/30), I decided to put together some practical policy examples for others to learn from. I'd recommend reading HashiCorp's official documentation as it has a lot of useful information.
+After struggling a bit with [ACL policies](https://www.vaultproject.io/docs/concepts/policies) early on in my experience with HashiCorp Vault and helping newcomers to Vault in the [community forums](https://discuss.hashicorp.com/c/vault/30), I decided to put together some practical policy examples for others to learn from. I'd recommend reading HashiCorp's [official documentation](https://www.vaultproject.io/docs/concepts/policies) as it has a lot of useful information.
 
 This document reflects my own experiences and is not endorsed by HashiCorp in anyway. Use this information at your own risk.
 
@@ -61,7 +61,7 @@ Capabilities are a superset of CRUD operations:
 > }
 > ```
 >
-> **Note:** See KV Policies section below for guidance around KVv1 and KVv2 policies.
+> **Note:** See [KV Policies](#kv-policies) section below for guidance around KVv1 and KVv2 policies.
 
 More advanced policies, such as [Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control), can control which attributes can be written to as well as some limited content enforcement. Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault, or content enforcement can be built into your workflow, if feasible.
 
