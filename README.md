@@ -4,6 +4,7 @@ After struggling a bit with [ACL policies](https://www.vaultproject.io/docs/conc
 
 This document reflects my own experiences and is not endorsed by HashiCorp in anyway. Use this information at your own risk.
 
+- [ACL Policy Overview](#acl-policy-overview)
   - [What do ACL policies do?](#what-do-acl-policies-do)
   - [Policy Construction](#policy-construction)
 - [Policy Pathing](#policy-pathing)
