@@ -460,5 +460,5 @@ Policies can be assigned directly to a token or indirectly by assigning to an au
 | Flexible policy assignment through Terraform*** | No     | No  | No     | No    | Yes  | Yes  |
 
 *: Can be assigned any policy the parent token is assigned.  
-**: Requires an associated Identity object with relevant metadata defined.
+**: Requires an associated Identity object with relevant metadata defined.  
 ***: Policies are assigned exclusively to roles through a single Terraform resource. Policies can be assigned non-exclusively to Identity Entities or Identity Groups via the `vault_identity_entity_policies` or `vault_identity_group_policies` resources with the `exclusive` flag set to `false`.
