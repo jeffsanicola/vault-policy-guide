@@ -117,6 +117,8 @@ Other endpoints will usually accept `create`, `read`, `update`, and `delete`. So
 > This most specific path will win!
 >
 > If you have two paths: `secret/*` and `secret/abc/*` in the same policy and try to interact with secret in path `secret/abc/123`, then the capabilities in the latter path will apply.
+>
+> See the [Conflicting Policies](#conflicting-policies) section for more information and examples.
 
 Small differences in paths can make big differences in access. Consider the paths and associated implications in this example policy:
 
@@ -209,20 +211,20 @@ Vault applies the most specific policy that matches the path. Policies **do not*
 
 ### Wildcards
 
-The `*` character may look and behave like a traditional wildcard at first, however it's actually what's called a "glob" character and may only be used at the end of a path.
+The `*` character may look and behave like a traditional wildcard at first, however it's actually what's called a "glob" character and may only be used at the end of a path. The "glob" character matches 0-or-more trailing characters, including `/`s.
 
-- Valid - `secret/abc/*` - Allows access to any secret of folder within the `abc` folder
-- Valid - `secret/abc/1*` - Allows access to any secret or folder with a name beginning with `1` within the `abc` folder
-- Invalid - `secret/*/123` - The glob character is only allowed at the end of a path
-- Invalid - `secret/a*c` - The glob character is only allowed at the end of a path
+- Valid - `secret/abc/*` - Allows access to any secret of folder within the `abc` folder; can allow listing on the `abc` folder itself.
+- Valid - `secret/abc/1*` - Allows access to any secret or folder with a name beginning with `1` within the `abc` folder.
+- Invalid - `secret/*/123` - The glob character is only allowed at the end of a path.
+- Invalid - `secret/a*c` - The glob character is only allowed at the end of a path.
 
 There is another option that behaves a bit more like a traditional wildcard in that it can be placed elsewhere in the path: the `+` character. The `+` character can substitute any full path component but not other partial parts of a path. The `+` character may also be used at the end of a path.
 
-- Valid - `secret/+/123` - Allows access to the `123` secret in any single parent folder (i.e., A secret `secret/abc/def/123` would not be allowed)
-- Valid - `secret/abc/+` - Allows access to any secret directly in the `abc` folder
+- Valid - `secret/+/123` - Allows access to the `123` secret in any single parent folder (i.e., A secret `secret/abc/def/123` would not be allowed).
+- Valid - `secret/abc/+` - Allows access to any secret directly in the `abc` folder.
 - Valid - `secret/+/*` - Allows access to any secret that exists in any subfolder of the secret engine mount.
 - Valid - `+/abc/123` - Allows access to secret `abc/123` in any secret engine mount.
-- Invalid - `secret/ab+/*` - The `+` character must be the only character between the `/`'s.
+- Invalid - `secret/a+c/*` - The `+` character must be the only character between the `/`'s.
 
 ### Conflicting Policies
 
