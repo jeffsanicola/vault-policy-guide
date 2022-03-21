@@ -7,6 +7,9 @@ This document reflects my own experiences and is not endorsed by HashiCorp in an
 - [ACL Policy Overview](#acl-policy-overview)
   - [What do ACL policies do?](#what-do-acl-policies-do)
   - [Policy Construction](#policy-construction)
+    - [Capabilities](#capabilities)
+    - [HTTP Methods](#http-methods)
+    - [Fine-Grained Control Policies](#fine-grained-control-policies)
 - [Policy Pathing](#policy-pathing)
   - [Folders vs. Endpoints](#folders-vs-endpoints)
   - [Inheritance](#inheritance)
@@ -37,8 +40,8 @@ Vault's Access Control List (ACL) policies specify a set of rules to apply to on
 Policies are written in HashiCorp Configuration Language (HCL) files. Basic policies consist of three things:
 
 - A name (must be lower-case)
-- A path (case sensitive)
-- One or more "capabilities"
+- [A path (case sensitive)](#policy-pathing)
+- One or more [capabilities](#capabilities)
 
 Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) endpoints to be effective.
 
@@ -57,6 +60,8 @@ Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) en
 >   capabilities = ["create", "read", "update" "delete", "list"]  
 > }
 >```
+
+#### Capabilities
 
 Capabilities are a superset of CRUD operations:
 
@@ -79,14 +84,7 @@ Capabilities are a superset of CRUD operations:
 >
 > **Note:** See [KV Policies](#kv-policies) section below for guidance around KVv1 and KVv2 policies.
 
-More advanced policies, such as [Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control), can control which attributes can be written to as well as some limited content enforcement. Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault, or content enforcement can be built into your workflow, if feasible.
-
-## Policy Pathing
-
-### Folders vs. Endpoints
-
-API endpoints that end with a `/` are considered a folder and only require the `read` or `list` capabilities.  
-Other endpoints will usually accept `create`, `read`, `update`, and `delete`. Some endpoints may require `sudo` for related commands to succeed, like the `sys/audit/*` endpoints. However, some endpoints only support a subset of these functions. Consult the [API guide](https://www.vaultproject.io/api-docs/index) for specific capabilities applicable to the path in question.
+#### HTTP Methods
 
 When referencing the [API guide](https://www.vaultproject.io/api-docs/index) you'll come across different REST methods: `GET`, `PATCH`, `POST`, `PUT`, `DELETE`, and `LIST`. Their capability equivalents are as follows:
 
@@ -102,6 +100,23 @@ When referencing the [API guide](https://www.vaultproject.io/api-docs/index) you
 > **Helpful Hint!**
 >
 > The `LIST` method is supported by select utilities, such as `curl`. Other utilities, such as PowerShell's Invoke-RestMethod only support the `GET` method. To list a folder where `LIST` isn't supported, use the `GET` method and append `?list=true` to the URI.
+
+#### Fine-Grained Control Policies
+
+More advanced policies, such as [Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control), can control which attributes can be written to as well as some limited content enforcement. Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault, or content enforcement can be built into your workflow, if feasible.
+
+## Policy Pathing
+
+### Folders vs. Endpoints
+
+API endpoints that end with a `/` are considered a folder and only require the `read` or `list` capabilities.  
+Other endpoints will usually accept `create`, `read`, `update`, and `delete`. Some endpoints may require `sudo` for related commands to succeed, like the `sys/audit/*` endpoints. However, some endpoints only support a subset of these functions. Consult the [API guide](https://www.vaultproject.io/api-docs/index) for specific capabilities applicable to the path in question.
+
+> **Helpful Hint!**
+>
+> This most specific path will win!
+>
+> If you have two paths: `secret/*` and `secret/abc/*` in the same policy and try to interact with secret in path `secret/abc/123`, then the capabilities in the latter path will apply.
 
 Small differences in paths can make big differences in access. Consider the paths and associated implications in this example policy:
 
@@ -443,9 +458,13 @@ Building policies to support the GUI takes some additional effort. Most of the e
 
 ### Default Policy
 
-The `default` policy, which is applied to all auth tokens by default, can be customized to your needs. Add or remove capabilities that should apply to any/all authenticated sessions within your Vault environment.
+The `default` policy, which is applied to all auth tokens by default, can be customized to your needs. Add or remove capabilities that should apply to any/all authenticated sessions within your Vault environment. Excercise caution when making adjustments to the `default` policy!
 
 If you do not want the default policy applied to a particular auth method role then specify the `token_no_default_policy=true` attribute (e.g., on an [AppRole Role](https://www.vaultproject.io/api-docs/auth/approle#token_no_default_policy)) when you create your role.
+
+> **Helpful Hint!**
+>
+>Removing the default policy from your role may have undesired effects. Avoid doing this unless you have a particular need.
 
 ## Policy Assignment
 
