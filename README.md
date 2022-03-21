@@ -4,6 +4,22 @@ After struggling a bit with [ACL policies](https://www.vaultproject.io/docs/conc
 
 This document reflects my own experiences and is not endorsed by HashiCorp in anyway. Use this information at your own risk.
 
+- [ACL Policy Overview](#acl-policy-overview)
+  - [What do ACL policies do?](#what-do-acl-policies-do)
+  - [Policy Construction](#policy-construction)
+- [Policy Pathing](#policy-pathing)
+  - [Folders vs. Endpoints](#folders-vs-endpoints)
+  - [Inheritance](#inheritance)
+  - [Wildcards](#wildcards)
+  - [Conflicting Policies](#conflicting-policies)
+  - [Templated Policies](#templated-policies)
+- [Policy Design](#policy-design)
+  - [Adminstrator Policies](#adminstrator-policies)
+  - [KV Policies](#kv-policies)
+  - [GUI Friendly Policies](#gui-friendly-policies)
+  - [Default Policy](#default-policy)
+- [Policy Assignment](#policy-assignment)
+
 ## ACL Policy Overview
 
 ### What do ACL policies do?
@@ -424,3 +440,25 @@ Building policies to support the GUI takes some additional effort. Most of the e
 - The URIs in the address bar are not the paths you need to put in your ACLs. Consult the [API guide](https://www.vaultproject.io/api-docs/index) for the required paths.
 - The GUI may attempt to display more things than you realize. When viewing Database roles, for instance, both dynamic and static roles are displayed. Permission to list both [dynamic](https://www.vaultproject.io/api-docs/secret/databases#list-roles) and [static](https://www.vaultproject.io/api-docs/secret/databases#list-static-roles) roles may be required.
 - If you're getting 403 Access Denied messages and can't figure out why, make sure you have an [Audit Device](https://www.vaultproject.io/docs/audit) configured and then review the logs for "permission denied" messages. The request path and operation, along with the policies attached to the in-use token, will be detailed in the record. If you're 100% sure your ACL rule covers the path and operation, make sure you don't have any conflicting rules (such as an explicit deny or more specific rule without the required permission). If there are no conflicts, try adding the `sudo` capability. I've found a couple instances where this is required but not documented (usually only needed in the `sys/` paths).
+
+### Default Policy
+
+The `default` policy, which is applied to all auth tokens by default, can be customized to your needs. Add or remove capabilities that should apply to any/all authenticated sessions within your Vault environment.
+
+If you do not want the default policy applied to a particular auth method role then specify the `token_no_default_policy=true` attribute (e.g., on an [AppRole Role](https://www.vaultproject.io/api-docs/auth/approle#token_no_default_policy)) when you create your role.
+
+## Policy Assignment
+
+Policies can be assigned directly to a token or indirectly by assigning to an auth method role, an [Identity Entity](https://www.vaultproject.io/api-docs/secret/identity/entity), or an [Identity Group](https://www.vaultproject.io/api-docs/secret/identity/group). You'll have to determine which is the most appropriate method for your use case. However, I'll attepmt to summarize the differences of each method.
+
+| Attribute/Type | Direct - Child | Direct - Role | Direct - Orphan | Role | Identity Entity | Identity Group |
+| ----------------------------------------------- |------- | --- | ------ | ----- | ---- | ---- |
+| Complexity to learn                             | Medium | Low | Medium | Low   | High | High |
+| Can be assigned *any* policy by *requester*     | No*    | No  | Yes    | No    | No   | No   |
+| Can be assigned any policy by admin             | No     | Yes | No     | Yes   | Yes  | Yes  |
+| Able to leverage Templated Policies             | No     | No  | No     | Yes** | Yes  | Yes  |
+| Flexible policy assignment through Terraform*** | No     | No  | No     | No    | Yes  | Yes  |
+
+*: Can be assigned any policy the parent token is assigned.  
+**: Requires an associated Identity object with relevant metadata defined.  
+***: Policies are assigned exclusively to roles through a single Terraform resource. Policies can be assigned non-exclusively to Identity Entities or Identity Groups via the `vault_identity_entity_policies` or `vault_identity_group_policies` resources with the `exclusive` flag set to `false`.
