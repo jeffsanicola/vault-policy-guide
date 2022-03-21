@@ -37,9 +37,9 @@ Vault's Access Control List (ACL) policies specify a set of rules to apply to on
 
 ### Policy Construction
 
-Policies are written in HashiCorp Configuration Language (HCL) files. Basic policies consist of three things:
+Policies are written in [HashiCorp Configuration Language](https://golangexample.com/hcl-the-hashicorp-configuration-language/) (.hcl) files. Basic policies consist of three things:
 
-- A name (must be lower-case)
+- A [name](https://www.vaultproject.io/docs/concepts/policies#creating-policies) (must be lower-case)
 - [A path (case sensitive)](#policy-pathing)
 - One or more [capabilities](#capabilities)
 
