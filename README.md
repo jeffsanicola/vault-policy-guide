@@ -113,6 +113,14 @@ These policies are beyond the current scope of this document. Details may be add
 
 ## Policy Pathing
 
+There are several considerations you should take into account when defining paths within your ACL policies:
+
+- Whether you're targeting a folder or a specific resource
+- How capabilities are inherited on child paths (or rather, not inherited)
+- How to effectively use wildcards
+- How conflicting or duplicate paths are handled
+- Whether Templated Policies are feasible in your configuration
+
 ### Folders vs. Endpoints
 
 API endpoints that end with a `/` are considered a folder and only require the `read` or `list` capabilities.  
