@@ -5,8 +5,9 @@ After struggling a bit with [ACL policies](https://www.vaultproject.io/docs/conc
 This document reflects my own experiences and is not endorsed by HashiCorp in anyway. Use this information at your own risk.
 
 - [ACL Policy Overview](#acl-policy-overview)
-  - [What do ACL policies do?](#what-do-acl-policies-do)
-  - [Policy Construction](#policy-construction)
+- [Policy Construction](#policy-construction)
+  - [Capabilities](#capabilities)
+  - [Fine-Grained Control Policies](#fine-grained-control-policies)
 - [Policy Pathing](#policy-pathing)
   - [Folders vs. Endpoints](#folders-vs-endpoints)
   - [Inheritance](#inheritance)
@@ -22,8 +23,6 @@ This document reflects my own experiences and is not endorsed by HashiCorp in an
 
 ## ACL Policy Overview
 
-### What do ACL policies do?
-
 Vault's Access Control List (ACL) policies specify a set of rules to apply to one or more paths. Policies, by themselves, do nothing. Policies are only meaningful when assigned to a token, entity, or group.
 
 > **Helpful Hint!**
@@ -32,15 +31,23 @@ Vault's Access Control List (ACL) policies specify a set of rules to apply to on
 >
 > Use this to your advantage when designing for "least privileged" access.
 
-### Policy Construction
+*****
 
-Policies are written in HashiCorp Configuration Language (HCL) files. Basic policies consist of three things:
+## Policy Construction
 
-- A name (must be lower-case)
-- A path (case sensitive)
-- One or more "capabilities"
+Policies are written in [HashiCorp Configuration Language](https://golangexample.com/hcl-the-hashicorp-configuration-language/) (.hcl) files. Basic policies consist of three things:
 
-Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) endpoints to be effective.
+- A [name](https://www.vaultproject.io/docs/concepts/policies#creating-policies) (must be lower-case)
+- A [path](#policy-pathing) (case sensitive)
+- One or more [capabilities](#capabilities)
+
+Each policy must have a unique name. The name is set when you [write the policy](https://www.vaultproject.io/docs/commands/policy/write#examples).
+
+```bash
+vault policy write my-policy /tmp/path_to_policy.hcl
+```
+
+Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) endpoints to be effective. The paths do not need to exist when the policy is written.
 
 > **Helpful Hint!**
 >
@@ -50,13 +57,15 @@ Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) en
 >>
 >> I often see Vault novices assume that `secret` is a root path for all secret engine mounts, which is incorrect. The name you provide for your secret engine mount is the root of your ACL path.
 >
-> If you customize your secret mount (e.g., `kv` or `my_kv`, etc.) then you need to make the corrsponding changes in your ACL policies.
+> If you customize your secret mount (e.g., `kv` or `my_kv`, etc.) then you need to make the corresponding changes in your ACL policies.
 >
 > ```hcl
 > path "kv/*" { # <-- Use your chosen secret mount name here
 >   capabilities = ["create", "read", "update" "delete", "list"]  
 > }
 >```
+
+### Capabilities
 
 Capabilities are a superset of CRUD operations:
 
@@ -79,15 +88,6 @@ Capabilities are a superset of CRUD operations:
 >
 > **Note:** See [KV Policies](#kv-policies) section below for guidance around KVv1 and KVv2 policies.
 
-More advanced policies, such as [Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control), can control which attributes can be written to as well as some limited content enforcement. Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault, or content enforcement can be built into your workflow, if feasible.
-
-## Policy Pathing
-
-### Folders vs. Endpoints
-
-API endpoints that end with a `/` are considered a folder and only require the `read` or `list` capabilities.  
-Other endpoints will usually accept `create`, `read`, `update`, and `delete`. Some endpoints may require `sudo` for related commands to succeed, like the `sys/audit/*` endpoints. However, some endpoints only support a subset of these functions. Consult the [API guide](https://www.vaultproject.io/api-docs/index) for specific capabilities applicable to the path in question.
-
 When referencing the [API guide](https://www.vaultproject.io/api-docs/index) you'll come across different REST methods: `GET`, `PATCH`, `POST`, `PUT`, `DELETE`, and `LIST`. Their capability equivalents are as follows:
 
 | REST Method | Capability     |
@@ -102,6 +102,37 @@ When referencing the [API guide](https://www.vaultproject.io/api-docs/index) you
 > **Helpful Hint!**
 >
 > The `LIST` method is supported by select utilities, such as `curl`. Other utilities, such as PowerShell's Invoke-RestMethod only support the `GET` method. To list a folder where `LIST` isn't supported, use the `GET` method and append `?list=true` to the URI.
+
+### Fine-Grained Control Policies
+
+More advanced policies, such as [Fine-Grained Control Policies](https://www.vaultproject.io/docs/concepts/policies#fine-grained-control), can control which attributes can be written to as well as some limited content enforcement. Fine-Grained policies may only be applied to key/value pair type attributes. Anything that accepts a "map" of data, such as KVv2 ironically enough, cannot be controlled using this method. Rather [Sentinel policies](https://www.vaultproject.io/docs/enterprise/sentinel), a Vault Enterprise feature, must be used to control content directly within Vault, or content enforcement can be built into your workflow, if feasible.
+
+These policies are beyond the current scope of this document. Details may be added at a later date.
+
+*****
+
+## Policy Pathing
+
+There are several considerations you should take into account when defining paths within your ACL policies:
+
+- Whether you're targeting a folder or a specific resource
+- How capabilities are inherited on child paths (or rather, not inherited)
+- How to effectively use wildcards
+- How conflicting or duplicate paths are handled
+- Whether Templated Policies are feasible in your configuration
+
+### Folders vs. Endpoints
+
+API endpoints that end with a `/` are considered a folder and only require the `read` or `list` capabilities.  
+Other endpoints will usually accept `create`, `read`, `update`, and `delete`. Some endpoints may require `sudo` for related commands to succeed, like the `sys/audit/*` endpoints. However, some endpoints only support a subset of these functions. Consult the [API guide](https://www.vaultproject.io/api-docs/index) for specific capabilities applicable to the path in question.
+
+> **Helpful Hint!**
+>
+> This most specific path will win!
+>
+> If you have two paths: `secret/*` and `secret/abc/*` in the same policy and try to interact with secret in path `secret/abc/123`, then the capabilities in the latter path will apply.
+>
+> See the [Conflicting Policies](#conflicting-policies) section for more information and examples.
 
 Small differences in paths can make big differences in access. Consider the paths and associated implications in this example policy:
 
@@ -194,20 +225,22 @@ Vault applies the most specific policy that matches the path. Policies **do not*
 
 ### Wildcards
 
-The `*` character may look and behave like a traditional wildcard at first, however it's actually what's called a "glob" character and may only be used at the end of a path.
+The `*` character may look and behave like a traditional wildcard at first, however it's actually what's called a "glob" character and may only be used at the end of a path. The "glob" character matches 0-or-more trailing characters, including `/`s.
 
-- Valid - `secret/abc/*` - Allows access to any secret of folder within the `abc` folder
-- Valid - `secret/abc/1*` - Allows access to any secret or folder with a name beginning with `1` within the `abc` folder
-- Invalid - `secret/*/123` - The glob character is only allowed at the end of a path
-- Invalid - `secret/a*c` - The glob character is only allowed at the end of a path
+- Valid - `secret/abc/*` - Allows access to any secret of folder within the `abc` folder; can allow listing on the `abc` folder itself.
+- Valid - `secret/abc/1*` - Allows access to any secret or folder with a name beginning with `1` within the `abc` folder.
+- Invalid - `secret/*/123` - The glob character is only allowed at the end of a path.
+- Invalid - `secret/a*c` - The glob character is only allowed at the end of a path.
 
 There is another option that behaves a bit more like a traditional wildcard in that it can be placed elsewhere in the path: the `+` character. The `+` character can substitute any full path component but not other partial parts of a path. The `+` character may also be used at the end of a path.
 
-- Valid - `secret/+/123` - Allows access to the `123` secret in any single parent folder (i.e., A secret `secret/abc/def/123` would not be allowed)
-- Valid - `secret/abc/+` - Allows access to any secret directly in the `abc` folder
+- Valid - `secret/+/123` - Allows access to the `123` secret in any single parent folder (i.e., A secret `secret/abc/def/123` would not be allowed).
+- Valid - `secret/abc/+` - Allows access to any secret directly in the `abc` folder.
 - Valid - `secret/+/*` - Allows access to any secret that exists in any subfolder of the secret engine mount.
 - Valid - `+/abc/123` - Allows access to secret `abc/123` in any secret engine mount.
-- Invalid - `secret/ab+/*` - The `+` character must be the only character between the `/`'s.
+- Invalid - `secret/a+c/*` - The `+` character must be the only character between the `/`'s.
+
+More specific details about how wildcards work are available at the end of the [Policy Syntax](https://www.vaultproject.io/docs/concepts/policies#policy-syntax) section of the official [Policies guide](https://www.vaultproject.io/docs/concepts/policies).
 
 ### Conflicting Policies
 
@@ -339,6 +372,8 @@ For instance, if you leverage [Vault's Identity secrets engine](https://www.vaul
 > }
 > ```
 
+*****
+
 ## Policy Design
 
 Every environment is different and your policy design should reflect the needs of your organization. Consider how much automation you're willing to implement, how you want your users to leverage Vault (will they just be consuming secrets or will they be managing their own secret mounts, etc.?), how much time you can devote to managing and maintaining the service, and how much access you want your administrators to have.
@@ -443,13 +478,17 @@ Building policies to support the GUI takes some additional effort. Most of the e
 
 ### Default Policy
 
-The `default` policy, which is applied to all auth tokens by default, can be customized to your needs. Add or remove capabilities that should apply to any/all authenticated sessions within your Vault environment.
+The `default` policy, which is applied to all auth tokens by default, can be customized to your needs. Add or remove capabilities that should apply to any/all authenticated sessions within your Vault environment. Excercise caution when making adjustments to the `default` policy!
 
 If you do not want the default policy applied to a particular auth method role then specify the `token_no_default_policy=true` attribute (e.g., on an [AppRole Role](https://www.vaultproject.io/api-docs/auth/approle#token_no_default_policy)) when you create your role.
 
+> **Helpful Hint!**
+>
+>Removing the default policy from your role may have undesired effects. Avoid doing this unless you have a particular need.
+
 ## Policy Assignment
 
-Policies can be assigned directly to a token or indirectly by assigning to an auth method role, an [Identity Entity](https://www.vaultproject.io/api-docs/secret/identity/entity), or an [Identity Group](https://www.vaultproject.io/api-docs/secret/identity/group). You'll have to determine which is the most appropriate method for your use case. However, I'll attepmt to summarize the differences of each method.
+Policies can be [assigned](https://www.vaultproject.io/docs/concepts/policies#associating-policies) directly to a token or indirectly by assigning to an auth method role, an [Identity Entity](https://www.vaultproject.io/api-docs/secret/identity/entity), or an [Identity Group](https://www.vaultproject.io/api-docs/secret/identity/group). You'll have to determine which is the most appropriate method for your use case. However, I'll attepmt to summarize the differences of each method.
 
 | Attribute/Type | Direct - Child | Direct - Role | Direct - Orphan | Role | Identity Entity | Identity Group |
 | ----------------------------------------------- |------- | --- | ------ | ----- | ---- | ---- |
@@ -462,3 +501,5 @@ Policies can be assigned directly to a token or indirectly by assigning to an au
 *: Can be assigned any policy the parent token is assigned.  
 **: Requires an associated Identity object with relevant metadata defined.  
 ***: Policies are assigned exclusively to roles through a single Terraform resource. Policies can be assigned non-exclusively to Identity Entities or Identity Groups via the `vault_identity_entity_policies` or `vault_identity_group_policies` resources with the `exclusive` flag set to `false`.
+
+*****
