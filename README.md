@@ -502,4 +502,24 @@ Policies can be [assigned](https://www.vaultproject.io/docs/concepts/policies#as
 **: Requires an associated Identity object with relevant metadata defined.  
 ***: Policies are assigned exclusively to roles through a single Terraform resource. Policies can be assigned non-exclusively to Identity Entities or Identity Groups via the `vault_identity_entity_policies` or `vault_identity_group_policies` resources with the `exclusive` flag set to `false`.
 
+When viewing your token (after a `vault login` command), you will observe multiple "policies" attributes:
+
+```bash
+Key                  Value
+---                  -----
+token                my_token
+token_accessor       my_token_accessor
+token_duration       15m
+token_renewable      false
+token_policies       ["default" "test_token_policy"]
+identity_policies    ["test_identity_policy"]
+policies             ["default" "test_token_policy" "test_identity_policy"]
+```
+
+> **Note:** In some versions of Vault, if you do not have any `identity_policies` assigned, then the field will not display
+
+- `token_policies` - The policies assigned directly to your token (or through a role)
+- `identity_policies` - The policies assigned to your token via an Identity Entity or Identity Group
+- `policies` - The combined list of `token_policies` and `identity_policies`
+
 *****
