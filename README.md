@@ -312,7 +312,7 @@ The `read` capability would win in this case as it is the most specific policy.
 >
 > ```hcl
 > path "secret/+/*" {
->   capabilities = ["read"]F
+>   capabilities = ["read"]
 > }
 > ```
 >
