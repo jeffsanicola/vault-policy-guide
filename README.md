@@ -93,7 +93,7 @@ When referencing the [API guide](https://www.vaultproject.io/api-docs/index) you
 | REST Method | Capability     |
 | ----------- | -------------- |
 | GET         | read           |
-| PATCH       | update         |
+| PATCH       | patch          |
 | POST        | create, update |
 | PUT         | create, update |
 | DELETE      | delete         |
