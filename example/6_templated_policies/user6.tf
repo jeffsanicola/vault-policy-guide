@@ -8,13 +8,13 @@ data "vault_policy_document" "user6" {
 
   rule {
     path         = "${vault_mount.kv.path}/metadata/{{identity.entity.name}}/*"
-    capabilities = ["read", "update", "delete", "list"]
+    capabilities = ["read", "update", "delete", "list", "patch"]
     description  = "allow managing metadata"
   }
 
   rule {
     path         = "${vault_mount.kv.path}/data/{{identity.entity.name}}/*"
-    capabilities = ["create", "read", "update", "delete", "list"]
+    capabilities = ["create", "read", "update", "delete"]
     description  = "allow full control on kv/{{identity.entity.name}}"
   }
 

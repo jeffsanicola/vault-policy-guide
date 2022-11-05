@@ -60,3 +60,5 @@ Users will only be able to read and write content to their respective folders.
     > ```bash
     > vault write kv/user6b/my_secret
     > ```
+
+9. Run a Terraform destroy to clean up the example components
