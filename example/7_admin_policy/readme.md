@@ -22,13 +22,13 @@ The policy included in this example allows for managing auth and secret mounts b
 >
 > ```hcl
 >  rule {
->    path         = "+/subkeys/*"
->    capabilities = ["read"]
->    description  = "Allow reading of KVv2 subkeys"
+>    path         = "+/config/*"
+>    capabilities = ["read", "update", "delete", "list"]
+>    description  = "Allow managing secret engine configs"
 >  }
 > ```
 >
-> If a KVv1 mount is configured, this policy would allow reading the contents of any secret within the "subkeys" directory (e.g., `kv/subkeys/*`).
+> If a KVv1 mount is configured, this policy would allow reading, updating, and deleting the contents of any secret within the "config" directory (e.g., `kv/config/*`).
 >
 > There are other similar rules in this example policy. Review it thoroughly to understand the capabilities being granted.
 

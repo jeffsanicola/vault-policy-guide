@@ -1,5 +1,5 @@
-resource "vault_mount" "kv" {
-  path    = "kv"
+resource "vault_mount" "kvv2" {
+  path    = "kvv2"
   type    = "kv"
   options = { version = "2" }
 }
@@ -16,7 +16,7 @@ resource "random_password" "example" {
 
 resource "vault_kv_secret_v2" "example" {
   for_each = random_password.example
-  mount    = vault_mount.kv.path
+  mount    = vault_mount.kvv2.path
   name     = "${each.key}/my_secret"
 
   data_json = jsonencode({

@@ -23,19 +23,19 @@ Users will only be able to read and write content to their respective folders.
 3. Read the "my_secret" secret in "user6a" (this will succeed)
     >
     > ```bash
-    > vault read kv/user1/my_secret
+    > vault read kvv2/user1/my_secret
     > ```
 
 4. Update the "my_secret" secret in "user6a" (this will succeed)
     >
     > ```bash
-    > vault write kv/user6a/secret password=P@ssw0rd!
+    > vault write kvv2/user6a/secret password=P@ssw0rd!
     > ```
 
 5. Attempt to read the "my_secret" secret in the "user6b" folder (this will fail)
     >
     > ```bash
-    > vault get kv/user6b/secret
+    > vault get kvv2/user6b/secret
     > ```
 
 6. Log in to Vault as `user6b`
@@ -52,13 +52,13 @@ Users will only be able to read and write content to their respective folders.
 7. Attempt to read the secret "my_secret" in "user6a" (this will fail)
     >
     > ```bash
-    > vault write kv/user6a/my_secret
+    > vault write kvv2/user6a/my_secret
     > ```
 
 8. Attempt to read the secret "my_secret" in "user6b" (this will succeed)
     >
     > ```bash
-    > vault write kv/user6b/my_secret
+    > vault write kvv2/user6b/my_secret
     > ```
 
 9. Run a Terraform destroy to clean up the example components
