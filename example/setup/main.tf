@@ -22,7 +22,7 @@ resource "vault_generic_endpoint" "users" {
   ignore_absent_fields = true
 
   data_json = jsonencode({
-    "password" = "changeme"
+    "password" = var.default_password
   })
 }
 

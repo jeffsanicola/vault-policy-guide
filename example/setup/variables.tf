@@ -7,3 +7,9 @@ variable "users" {
     "7", "8a", "8b", "9a", "9b", "10"
   ]
 }
+
+variable "default_password" {
+  type        = string
+  description = "Default password for example users"
+  default     = "changeme"
+}
