@@ -36,8 +36,7 @@ The policy included in this example allows for managing auth and secret mounts b
 
 Admin policy created and granted to "user7"
 
-1. Apply the terraform
-2. Log in to Vault as `user7`
+1. Log in to Vault as `user7`
     "user7" will be able to perform most operations within Vault except viewing the full contents of secrets.
     >
     > ```bash
@@ -48,28 +47,26 @@ Admin policy created and granted to "user7"
     > again. Future Vault requests will automatically use this token.
     > ```
     >
-3. Read the "my_secret" secret (this will fail)
+2. Read the "my_secret" secret (this will fail)
     >
     > ```bash
     > vault read kv/my_secret
     > ```
     >
-4. Enable the AppRole auth mount (this will succeed)
+3. Enable the AppRole auth mount (this will succeed)
     >
     > ```bash
     > vault auth enable approle
     > ```
 
-5. Create an AppRole role (this will succeed)
+4. Create an AppRole role (this will succeed)
     >
     > ```bash
     > vault write auth/approle/role/my_role policies=default
     > ```
 
-6. Disable the AppRole auth mount (this will succeed)
+5. Disable the AppRole auth mount (this will succeed)
     >
     > ```bash
     > vault auth disable approle
     > ```
-
-7. Run a Terraform destroy to clean up the example components

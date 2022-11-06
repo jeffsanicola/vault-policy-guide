@@ -4,42 +4,43 @@ This example demonstrates Templated policies for KVv2 secrets in the `kv/` path.
 
 The Terraform files create a user, KVv2 mount, and policy that grants access to secrets specific to the logged in user within the `kv/` path.
 
-## Example 6A
+## Example 8A
 
 Users will only be able to read and write content to their respective folders.
 
-1. Apply the terraform
-2. Log in to Vault as `user6a`
-    "user6a" will be able to read/write within the "user6a" folder.
+1. Log in to Vault as `user8a`
+    "user8a" will be able to read/write within the "user8a" folder.
     >
     > ```bash
-    > vault login -method=userpass username=user6a
+    > vault login -method=userpass username=user8a
     > Password (will be hidden):
     > Success! You are now authenticated. The token information displayed below
     > is already stored in the token helper. You do NOT need to run "vault login"
     > again. Future Vault requests will automatically use this token.
     > ```
 
-3. Read the "my_secret" secret in "user6a" (this will succeed)
+2. Read the "my_secret" secret in "user8a" (this will succeed)
     >
     > ```bash
-    > vault read kvv2/user1/my_secret
+    > vault read kvv2/user8a/my_secret
     > ```
 
-4. Update the "my_secret" secret in "user6a" (this will succeed)
+3. Update the "my_secret" secret in "user8a" (this will succeed)
     >
     > ```bash
-    > vault write kvv2/user6a/secret password=P@ssw0rd!
+    > vault write kvv2/user8a/secret password=P@ssw0rd!
     > ```
 
-5. Attempt to read the "my_secret" secret in the "user6b" folder (this will fail)
+4. Attempt to read the "my_secret" secret in the "user8b" folder (this will fail)
     >
     > ```bash
-    > vault get kvv2/user6b/secret
+    > vault get kvv2/user8b/secret
     > ```
 
-6. Log in to Vault as `user6b`
-    "user6b" will not be able to interact with anything in the "user6a" folder.
+## Example 8B
+
+1. Log in to Vault as `user8b`
+    "user8b" will not be able to interact with anything in the "user8a" folder.
     >
     > ```bash
     > vault login -method=userpass username=user5b
@@ -49,16 +50,14 @@ Users will only be able to read and write content to their respective folders.
     > again. Future Vault requests will automatically use this token.
     > ```
 
-7. Attempt to read the secret "my_secret" in "user6a" (this will fail)
+2. Attempt to read the secret "my_secret" in "user8a" (this will fail)
     >
     > ```bash
-    > vault write kvv2/user6a/my_secret
+    > vault write kvv2/user8a/my_secret
     > ```
 
-8. Attempt to read the secret "my_secret" in "user6b" (this will succeed)
+3. Attempt to read the secret "my_secret" in "user8b" (this will succeed)
     >
     > ```bash
-    > vault write kvv2/user6b/my_secret
+    > vault write kvv2/user8b/my_secret
     > ```
-
-9. Run a Terraform destroy to clean up the example components

@@ -8,8 +8,7 @@ The Terraform files create a user, KVv1 mount, and policy that grants varying le
 
 Two policies applied to the same exact path provide the cumulative permission set.
 
-1. Apply the terraform
-2. Log in to Vault as `user5a`
+1. Log in to Vault as `user5a`
     "user5a" will be able to write within specific subfolder of the root path and in some cases additional restrictions are applied.
     >
     > ```bash
@@ -20,13 +19,13 @@ Two policies applied to the same exact path provide the cumulative permission se
     > again. Future Vault requests will automatically use this token.
     > ```
     >
-3. Read the "my_secret" secret in "folder1" (this will succeed)
+2. Read the "my_secret" secret in "folder1" (this will succeed)
     >
     > ```bash
     > vault read kv/folder1/my_secret
     > ```
     >
-4. Update the "my_secret" secret in "folder1" (this will succeed)
+3. Update the "my_secret" secret in "folder1" (this will succeed)
     >
     > ```bash
     > vault write kv/folder1/secret password=P@ssw0rd!
@@ -120,4 +119,3 @@ A policy that requires a specific KV mount will take priority over a policy with
     > vault write kv-test/folder1/my_secret password=P@ssw0rd!
     > ```
     >
-5. Run a Terraform destroy to clean up the example components
