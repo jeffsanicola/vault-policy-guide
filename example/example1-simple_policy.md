@@ -33,3 +33,11 @@ The Terraform files create a user, KVv2 mount, and policy that grants full acces
     > ```
 
 ## Observations
+
+* Policy allows full KV interaction in a KVv1 mount.
+
+## Policy
+
+View the policies in Vault:
+
+* user1_policy

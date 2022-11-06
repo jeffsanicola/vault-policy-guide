@@ -51,3 +51,13 @@ The Terraform files create a user, KVv1 mount, and policy that grants full acces
     > ```
 
 ## Observations
+
+* When a path ends with a `/` it is considered a folder
+* When a path ends with a non-special (`/`, `*`, or `+`) character it is considered a secret or object
+
+## Policies
+
+View the policies in Vault:
+
+* user2a_policy
+* user2b_policy

@@ -116,3 +116,16 @@ The Terraform files create a user, KVv1 mount, and policy that grants varying le
     > ```
 
 ## Observations
+
+*
+*
+
+## Policies
+
+View the policies in Vault:
+
+* user4a_policy
+* user4b_policy
+* user4c_policy
+* user4d_policy
+*

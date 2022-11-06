@@ -49,7 +49,7 @@ resource "vault_identity_entity" "user11" {
 
 resource "vault_identity_entity_policies" "user11" {
   policies = [
-    vault_policy.user11.name
+    vault_policy.entity11.name
   ]
   exclusive = false
   entity_id = vault_identity_entity.user11.id

@@ -37,74 +37,10 @@ A few things to note with this example:
 * Similar restrictions can be applied to KVv1
 * This example relies on Identity Entity names to be predefined so it's easy to identify the paths to use. Relying on auto-generated Identity Entities will make navigation more difficult.
 
-## Setting up Access
+## Policy
 
 Configure the `list` capability for each level of your hierarchy that needs to be traversed. When the desired path/depth is reached then you can specify paths that contain secret content with more capabilities.
 
-Here's the rendered policy as used in this example.
+See the following policies in Vault:
 
-```hcl
-# allow listing root contents in KVv2
-path "kvv2/metadata/" {
-  capabilities = ["list"]
-}
-
-# allow listing contents in the example9/ folder
-path "kvv2/metadata/example9/" {
-  capabilities = ["list"]
-}
-
-# allow listing contents in the example9/users/ folder
-path "kvv2/metadata/example9/users/" {
-  capabilities = ["list"]
-}
-
-# allow KVv2 manage metadata in the example9/users/<username>/ folder
-path "kvv2/metadata/example9/users/{{identity.entity.name}}/*" {
-  capabilities = ["read", "update", "delete", "list", "patch"]
-}
-
-# allow KVv2 manage data
-path "kvv2/data/example9/users/{{identity.entity.name}}/*" {
-  capabilities = ["create", "read", "update", "delete", "patch"]
-}
-
-# allow KVv2 (soft)delete version
-path "kvv2/delete/example9/users/{{identity.entity.name}}/*" {
-  capabilities = ["update"]
-}
-
-# allow KVv2 undelete (restore version)
-path "kvv2/undelete/example9/users/{{identity.entity.name}}/*" {
-  capabilities = ["update"]
-}
-
-# allow KVv2 destroy (permanent delete version)
-path "kvv2/destroy/example9/users/{{identity.entity.name}}/*" {
-  capabilities = ["update"]
-}
-```
-
-A KVv1 example would look like the following:
-
-```hcl
-# allow listing root contents in KVv2
-path "kv/" {
-  capabilities = ["list"]
-}
-
-# allow listing contents in the example9/ folder
-path "kv/example9/" {
-  capabilities = ["list"]
-}
-
-# allow listing contents in the example9/users/ folder
-path "kv/example9/users/" {
-  capabilities = ["list"]
-}
-
-# allow managing KV data
-path "kv/example9/users/{{identity.entity.name}}/*" {
-  capabilities = ["create", "read", "update", "delete", "list"]
-}
-```
+* users9_policy

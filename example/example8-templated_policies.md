@@ -68,40 +68,12 @@ Users will only be able to read and write content to their respective folders.
 * Using Identity Group attributes requires defining the specific group within the policy reference.
 * If an entity has a policy assigned with a group reference that they are not a member of, the permissions are not applied.
 
-## Setting up Access
+## Policy
 
 In this case we used the `{{identity.entity.name}}` reference as seen below in the rendered policy:
 
-```hcl
-# allow list on kv
-path "kvv2/metadata/" {
-  capabilities = ["read", "list"]
-}
+View the policies in Vault:
 
-# allow managing metadata
-path "kvv2/metadata/{{identity.entity.name}}/*" {
-  capabilities = ["read", "update", "delete", "list", "patch"]
-}
-
-# allow full control on kvv2/{{identity.entity.name}}
-path "kvv2/data/{{identity.entity.name}}/*" {
-  capabilities = ["create", "read", "update", "delete", "patch"]
-}
-
-# allow delete on kvv2/{{identity.entity.name}}
-path "kvv2/delete/{{identity.entity.name}}/*" {
-  capabilities = ["update"]
-}
-
-# allow undelete on kvv2/{{identity.entity.name}}
-path "kvv2/undelete/{{identity.entity.name}}/*" {
-  capabilities = ["update"]
-}
-
-# allow destroy on kvv2/{{identity.entity.name}}
-path "kvv2/destroy/{{identity.entity.name}}/*" {
-  capabilities = ["update"]
-}
-```
+* user8_policy
 
 Be sure to review and leverage the other references available in the official [Templated Policies](https://developer.hashicorp.com/vault/docs/concepts/policies#templated-policies) guide.

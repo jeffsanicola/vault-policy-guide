@@ -101,6 +101,8 @@ User6c has full access to KVv2 secrets in the `kvv2` mount.
 
 ## Example 6D
 
+User6d has read-only access to KVv2 secrets in the `kvv2` mount.
+
 1. Log in to Vault as `user6d` with password "changeme"
     "user6d" will be able to list and read within the `kvv2` mount.
     >
@@ -131,3 +133,15 @@ User6c has full access to KVv2 secrets in the `kvv2` mount.
     > ```
 
 ## Observations
+
+* KVv1 policies are more simplistic when compared to KVv2
+* KVv2 has several subpaths for more granular control of secrets
+
+## Policy
+
+View the policies in Vault:
+
+* user6a_policy
+* user6b_policy
+* user6c_policy
+* user6d_policy

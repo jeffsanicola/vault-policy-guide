@@ -1,4 +1,4 @@
-data "vault_policy_document" "example" {
+data "vault_policy_document" "user1_policy" {
   rule {
     path         = "${vault_mount.kvv1.path}/*"
     capabilities = ["create", "read", "update", "delete", "list"]
@@ -6,7 +6,7 @@ data "vault_policy_document" "example" {
   }
 }
 
-resource "vault_policy" "example" {
-  name   = "example_policy"
-  policy = data.vault_policy_document.example.hcl
+resource "vault_policy" "user1_policy" {
+  name   = "user1_policy"
+  policy = data.vault_policy_document.user1_policy.hcl
 }

@@ -72,3 +72,13 @@ Admin policy created and granted to "user7"
     > ```
 
 ## Observations
+
+* An admin or support policy should only grant the capabilities the admin/support team needs to perform troubleshooting and issue correction
+* Some API paths for dynamic secrets aren't as well crafted as others which requires being mindful of the paths configured in the policy.
+* Use read-only capabilities where you can to reduce the risk of undesired configuration changes (e.g, on the `sys/audit` paths.)
+
+## Policy
+
+View the policies in Vault:
+
+* admin_policy

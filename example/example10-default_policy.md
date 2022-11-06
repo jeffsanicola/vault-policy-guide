@@ -81,6 +81,10 @@ Suppose you have discovered that allowing entities to [generate random bytes](ht
 
 ## Observations
 
+* Default policy can be managed like any other policy
+* Default policy cannot be deleted
+* Add capabilities you want to have every entity in Vault able to leverage
+
 ## Default Policy as of Vault 1.12
 
 This policy is hard coded in the Vault source code. However, it can be adjusted to suit your needs. The original `default` policy is provided here as reference but can easily be retrieved by running a dev instance of Vault.
