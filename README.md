@@ -490,13 +490,13 @@ If you do not want the default policy applied to a particular auth method role t
 
 Policies can be [assigned](https://www.vaultproject.io/docs/concepts/policies#associating-policies) directly to a token or indirectly by assigning to an auth method role, an [Identity Entity](https://www.vaultproject.io/api-docs/secret/identity/entity), or an [Identity Group](https://www.vaultproject.io/api-docs/secret/identity/group). You'll have to determine which is the most appropriate method for your use case. However, I'll attepmt to summarize the differences of each method.
 
-| Attribute/Type | Direct - Child | Direct - Role | Direct - Orphan | Role | Identity Entity | Identity Group |
-| ----------------------------------------------- |------- | --- | ------ | ----- | ---- | ---- |
-| Complexity to learn                             | Medium | Low | Medium | Low   | High | High |
-| Can be assigned *any* policy by *requester*     | No*    | No  | Yes    | No    | No   | No   |
-| Can be assigned any policy by admin             | No     | Yes | No     | Yes   | Yes  | Yes  |
-| Able to leverage Templated Policies             | No     | No  | No     | Yes** | Yes  | Yes  |
-| Flexible policy assignment through Terraform*** | No     | No  | No     | No    | Yes  | Yes  |
+| Attribute/Type                                  | Direct - Child | Direct - Token Role | Direct - Orphan | Role  | Identity Entity | Identity Group |
+| ----------------------------------------------- | -------------- | ------------------- | --------------- | ----- | --------------- | -------------- |
+| Complexity to learn                             | Medium         | Low                 | Medium          | Low   | High            | High           |
+| Can be assigned *any* policy by *requester*     | No*            | No                  | Yes             | No    | No              | No             |
+| Can be assigned any policy by admin             | No             | Yes                 | No              | Yes   | Yes             | Yes            |
+| Able to leverage Templated Policies             | No             | No                  | No              | Yes** | Yes             | Yes            |
+| Flexible policy assignment through Terraform*** | No             | No                  | No              | No    | Yes             | Yes            |
 
 *: Can be assigned any policy the parent token is assigned.  
 **: Requires an associated Identity object with relevant metadata defined.  
