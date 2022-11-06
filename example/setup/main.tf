@@ -29,7 +29,7 @@ resource "vault_generic_endpoint" "users" {
 resource "vault_identity_entity" "users" {
   # Need to create an Identity Entity so that the name is not randomly generated at first login
   for_each          = vault_generic_endpoint.users
-  name              = each.key
+  name              = "user${each.key}"
   external_policies = true
 }
 
@@ -45,7 +45,7 @@ resource "vault_identity_entity_policies" "users" {
 resource "vault_identity_entity_alias" "users" {
   # Tie the Identity Entity to the userpass user
   for_each       = vault_identity_entity.users
-  name           = each.key
+  name           = each.value.name
   mount_accessor = vault_auth_backend.userpass.accessor
   canonical_id   = each.value.id
 }
