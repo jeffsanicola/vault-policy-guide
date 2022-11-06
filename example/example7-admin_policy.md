@@ -50,7 +50,7 @@ Admin policy created and granted to "user7"
 2. Read the "my_secret" secret (this will fail)
     >
     > ```bash
-    > vault read kv/my_secret
+    > vault kv get -mount=kvvs example7/my_secret
     > ```
     >
 3. Enable the AppRole auth mount (this will succeed)
@@ -70,3 +70,5 @@ Admin policy created and granted to "user7"
     > ```bash
     > vault auth disable approle
     > ```
+
+## Observations

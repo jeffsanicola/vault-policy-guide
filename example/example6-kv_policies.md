@@ -129,3 +129,5 @@ User6c has full access to KVv2 secrets in the `kvv2` mount.
     > ```bash
     > vault kv put -mount=kvv2 example6c/my_secret password="P@ssw0rd"
     > ```
+
+## Observations

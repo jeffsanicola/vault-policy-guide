@@ -3,48 +3,48 @@ data "vault_policy_document" "users9" {
   # KVv2 policy
   rule {
     path         = "${vault_mount.kvv2.path}/metadata/"
-    capabilities = ["read", "list"]
-    description  = "allow KVv2 managing all metadata and permanently deleting secret"
-  }
-
-  rule {
-    path         = "${vault_mount.kvv2.path}/metadata/example9a/"
     capabilities = ["list"]
-    description  = "allow KVv2 managing all metadata and permanently deleting secret"
+    description  = "allow listing root contents in KVv2"
   }
 
   rule {
-    path         = "${vault_mount.kvv2.path}/metadata/example9a/users"
+    path         = "${vault_mount.kvv2.path}/metadata/example9/"
     capabilities = ["list"]
-    description  = "allow KVv2 managing all metadata and permanently deleting secret"
+    description  = "allow listing contents in the example9/ folder"
   }
 
   rule {
-    path         = "${vault_mount.kvv2.path}/metadata/example9a/users/{{identity.entity.name}}/*"
+    path         = "${vault_mount.kvv2.path}/metadata/example9/users/"
+    capabilities = ["list"]
+    description  = "allow listing contents in the example9/users/ folder"
+  }
+
+  rule {
+    path         = "${vault_mount.kvv2.path}/metadata/example9/users/{{identity.entity.name}}/*"
     capabilities = ["read", "update", "delete", "list", "patch"]
-    description  = "allow KVv2 managing all metadata and permanently deleting secret"
+    description  = "allow KVv2 manage metadata in the example9/users/<username>/ folder"
   }
 
   rule {
-    path         = "${vault_mount.kvv2.path}/data/example9a/users/{{identity.entity.name}}/*"
+    path         = "${vault_mount.kvv2.path}/data/example9/users/{{identity.entity.name}}/*"
     capabilities = ["create", "read", "update", "delete", "patch"]
-    description  = "allow KVv2 managing data"
+    description  = "allow KVv2 manage data"
   }
 
   rule {
-    path         = "${vault_mount.kvv2.path}/delete/example9a/users/{{identity.entity.name}}/*"
+    path         = "${vault_mount.kvv2.path}/delete/example9/users/{{identity.entity.name}}/*"
     capabilities = ["update"]
     description  = "allow KVv2 (soft)delete version"
   }
 
   rule {
-    path         = "${vault_mount.kvv2.path}/undelete/example9a/users/{{identity.entity.name}}/*"
+    path         = "${vault_mount.kvv2.path}/undelete/example9/users/{{identity.entity.name}}/*"
     capabilities = ["update"]
     description  = "allow KVv2 undelete (restore version)"
   }
 
   rule {
-    path         = "${vault_mount.kvv2.path}/destroy/example9a/users/{{identity.entity.name}}/*"
+    path         = "${vault_mount.kvv2.path}/destroy/example9/users/{{identity.entity.name}}/*"
     capabilities = ["update"]
     description  = "allow KVv2 destroy (permanent delete version)"
   }
@@ -78,7 +78,17 @@ resource "vault_identity_entity_policies" "user9b" {
 resource "vault_kv_secret_v2" "users9" {
   for_each = toset(["user9a", "user9b"])
   mount    = vault_mount.kvv2.path
-  name     = "example9a/users/${each.key}/my_secret"
+  name     = "example9/users/${each.key}/my_secret"
+
+  data_json = jsonencode({
+    "password" = "P@ssw0rd"
+  })
+}
+
+resource "vault_kv_secret_v2" "access_denied" {
+  for_each = toset(["user9a", "user9b"])
+  mount    = vault_mount.kvv2.path
+  name     = "example9/denied/secret"
 
   data_json = jsonencode({
     "password" = "P@ssw0rd"

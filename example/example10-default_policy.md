@@ -4,7 +4,7 @@ The `default` policy can be managed and modified by an entity with access to upd
 
 ## Example 10
 
-You have discovered that allowing entities to [generate random bytes](https://developer.hashicorp.com/vault/api-docs/system/tools#generate-random-bytes) through Vault is a common use case and want to make it available to all entities logging into Vault.
+Suppose you have discovered that allowing entities to [generate random bytes](https://developer.hashicorp.com/vault/api-docs/system/tools#generate-random-bytes) through Vault is a common use case and you want to make it available to all entities logging into Vault.
 
 1. Log in to Vault as `user10` with password "changeme"
     "user10" will be not able to generate random bytes.
@@ -78,6 +78,8 @@ You have discovered that allowing entities to [generate random bytes](https://de
     > ```bash
     > vault write sys/tools/random format=base64
     >```
+
+## Observations
 
 ## Default Policy as of Vault 1.12
 

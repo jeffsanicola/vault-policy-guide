@@ -13,22 +13,23 @@ The Terraform files create a user, KVv2 mount, and policy that grants full acces
     > is already stored in the token helper. You do NOT need to run "vault login"
     > again. Future Vault requests will automatically use this token.
     > ```
-    >
+
 2. Attempt to write a secret in a location you *do not* have rights to
     >
     > ```bash
     > vault kv put secret/my_secret password=P@ssw0rd!
     > ```
-    >
+
 3. Attempt to write a secret in a location you *do* have rights to
     >
     > ```bash
     > vault kv put kv/my_secret password=P@ssw0rd!
     > ```
-    >
+
 4. Read the secret
     >
     > ```bash
     > vault kv get kv/my_secret
     > ```
-    >
+
+## Observations

@@ -114,3 +114,5 @@ The Terraform files create a user, KVv1 mount, and policy that grants varying le
     > ```bash
     > vault write kv/my_secret password=P@ssw0rd!
     > ```
+
+## Observations

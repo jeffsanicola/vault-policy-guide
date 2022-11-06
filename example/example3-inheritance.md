@@ -44,3 +44,5 @@ The Terraform files create a user, KVv1 mount, and policy that grants `list` and
     > vault write kv/example3/subfolder/new_secret password="P@ssw0rd!"
     > ```
     >
+
+## Observations

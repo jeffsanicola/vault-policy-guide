@@ -119,3 +119,5 @@ A policy that requires a specific KV mount will take priority over a policy with
     > vault write kv-test/folder1/my_secret password=P@ssw0rd!
     > ```
     >
+
+## Observations

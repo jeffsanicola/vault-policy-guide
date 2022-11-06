@@ -16,25 +16,25 @@ data "vault_policy_document" "user8" {
   rule {
     path         = "${vault_mount.kvv2.path}/data/{{identity.entity.name}}/*"
     capabilities = ["create", "read", "update", "delete", "patch"]
-    description  = "allow full control on kv/{{identity.entity.name}}"
+    description  = "allow full control on kvv2/{{identity.entity.name}}"
   }
 
   rule {
     path         = "${vault_mount.kvv2.path}/delete/{{identity.entity.name}}/*"
     capabilities = ["update"]
-    description  = "allow delete on kv/{{identity.entity.name}}"
+    description  = "allow delete on kvv2/{{identity.entity.name}}"
   }
 
   rule {
     path         = "${vault_mount.kvv2.path}/undelete/{{identity.entity.name}}/*"
     capabilities = ["update"]
-    description  = "allow undelete on kv/{{identity.entity.name}}"
+    description  = "allow undelete on kvv2/{{identity.entity.name}}"
   }
 
   rule {
     path         = "${vault_mount.kvv2.path}/destroy/{{identity.entity.name}}/*"
     capabilities = ["update"]
-    description  = "allow destroy on kv/{{identity.entity.name}}"
+    description  = "allow destroy on kvv2/{{identity.entity.name}}"
   }
 }
 
