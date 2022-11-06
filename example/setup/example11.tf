@@ -78,18 +78,9 @@ resource "vault_policy" "group11" {
 
 # Identity Group
 resource "vault_identity_group" "group11" {
-  name                       = "example11"
-  type                       = "internal"
-  policies                   = [vault_policy.group11.name]
-  external_member_entity_ids = true
+  name     = "example11"
+  type     = "internal"
+  policies = [vault_policy.group11.name]
 
-  metadata = {
-    version = "2"
-  }
-}
-
-resource "vault_identity_group_member_entity_ids" "group11_user11" {
-  exclusive         = true
   member_entity_ids = [vault_identity_entity.user11.id]
-  group_id          = vault_identity_group.group11.id
 }
