@@ -12,9 +12,13 @@ resource "vault_auth_backend" "userpass" {
   type = "userpass"
 }
 
+resource "random_password" "example" {
+  length = 16
+}
+
 resource "vault_generic_secret" "example" {
   path = "${vault_mount.kv.path}/folder1/my_secret"
   data_json = jsonencode({
-    "password" = "changeme"
+    "password" = random_password.example.result
   })
 }
