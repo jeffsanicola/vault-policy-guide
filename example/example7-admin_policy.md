@@ -36,7 +36,7 @@ The policy included in this example allows for managing auth and secret mounts b
 
 Admin policy created and granted to "user7"
 
-1. Log in to Vault as `user7`
+1. Log in to Vault as `user7` with password "changeme"
     "user7" will be able to perform most operations within Vault except viewing the full contents of secrets.
     >
     > ```bash

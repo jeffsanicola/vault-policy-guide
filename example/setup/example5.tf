@@ -167,9 +167,9 @@ data "vault_policy_document" "user5d_addon" {
   }
 
   rule {
-    path         = "+/folder1/*"
+    path         = "+/example5/*"
     capabilities = ["create", "read", "update", "delete", "list"]
-    description  = "allow all on kv/folder1"
+    description  = "allow all on kv/example5"
   }
 }
 
@@ -184,4 +184,15 @@ resource "vault_identity_entity_policies" "user5d_addon" {
   ]
   exclusive = false
   entity_id = vault_identity_entity.users["5d"].id
+}
+
+resource "random_password" "example5" {
+  length = 16
+}
+
+resource "vault_generic_secret" "example5" {
+  path = "${vault_mount.kvv1.path}/example5/my_secret"
+  data_json = jsonencode({
+    "password" = random_password.example5.result
+  })
 }

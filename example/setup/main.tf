@@ -1,6 +1,7 @@
 resource "vault_mount" "kvv1" {
-  path = "kv"
-  type = "kv"
+  path    = "kv"
+  type    = "kv"
+  options = { version = "1" }
 }
 
 resource "vault_mount" "kvv2" {
@@ -47,4 +48,20 @@ resource "vault_identity_entity_alias" "users" {
   name           = each.key
   mount_accessor = vault_auth_backend.userpass.accessor
   canonical_id   = each.value.id
+}
+
+resource "random_password" "users" {
+  for_each = toset(var.users)
+
+  length = 16
+}
+
+resource "vault_kv_secret_v2" "users" {
+  for_each = random_password.users
+  mount    = vault_mount.kvv2.path
+  name     = "example${each.key}/my_secret"
+
+  data_json = jsonencode({
+    "password" = each.value.result
+  })
 }

@@ -4,7 +4,7 @@ This example demonstrates a simple policy that allows full access to KV secrets 
 
 The Terraform files create a user, KVv2 mount, and policy that grants full access to secrets in the `kv/` path.
 
-1. Log in to Vault
+1. Log in to Vault as `user1` with password "changeme"
     >
     > ```bash
     > vault login -method=userpass username=user1

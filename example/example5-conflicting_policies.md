@@ -8,7 +8,7 @@ The Terraform files create a user, KVv1 mount, and policy that grants varying le
 
 Two policies applied to the same exact path provide the cumulative permission set.
 
-1. Log in to Vault as `user5a`
+1. Log in to Vault as `user5a` with password "changeme"
     "user5a" will be able to write within specific subfolder of the root path and in some cases additional restrictions are applied.
     >
     > ```bash
@@ -36,7 +36,7 @@ Two policies applied to the same exact path provide the cumulative permission se
 
 The deny permission takes priority over any other permissions.
 
-1. Log in to Vault as `user5b`
+1. Log in to Vault as `user5b` with password "changeme"
     "user5b" will not be able to interact with anything in the "folder1" folder.
     >
     > ```bash
@@ -57,7 +57,7 @@ The deny permission takes priority over any other permissions.
 
 A specific policy that grants read access on "kv/folder1/\*" will take priority over a wildcarded path of "+/folder1/\*" that grants read/write access.
 
-1. Log in to Vault as `user5c`
+1. Log in to Vault as `user5c` with password "changeme"
     "user5b" will not be able to interact with anything in the "folder1" folder.
     >
     > ```bash
@@ -90,7 +90,7 @@ A specific policy that grants read access on "kv/folder1/\*" will take priority 
 
 A policy that requires a specific KV mount will take priority over a policy with a wildcard mount and specific folder.
 
-1. Log in to Vault as `user5d`
+1. Log in to Vault as `user5d` with password "changeme"
     "user4c" will be able to write any secret in any subfolder of the KV root but will be unable to write directly to the root path.
     >
     > ```bash

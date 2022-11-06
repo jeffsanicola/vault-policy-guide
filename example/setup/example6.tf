@@ -87,3 +87,15 @@ resource "vault_policy" "user6d" {
   name   = "user6d_policy"
   policy = data.vault_policy_document.user6d.hcl
 }
+
+# Generate test secrets
+resource "random_password" "example6a" {
+  length = 16
+}
+
+resource "vault_generic_secret" "example6a" {
+  path = "${vault_mount.kvv1.path}/example6/my_secret"
+  data_json = jsonencode({
+    "password" = random_password.example6a.result
+  })
+}

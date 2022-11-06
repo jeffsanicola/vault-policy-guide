@@ -8,7 +8,7 @@ The Terraform files create a user, KVv2 mount, and policy that grants access to 
 
 Users will only be able to read and write content to their respective folders.
 
-1. Log in to Vault as `user8a`
+1. Log in to Vault as `user8a` with password "changeme"
     "user8a" will be able to read/write within the "user8a" folder.
     >
     > ```bash
@@ -39,7 +39,7 @@ Users will only be able to read and write content to their respective folders.
 
 ## Example 8B
 
-1. Log in to Vault as `user8b`
+1. Log in to Vault as `user8b` with password "changeme"
     "user8b" will not be able to interact with anything in the "user8a" folder.
     >
     > ```bash

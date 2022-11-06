@@ -4,7 +4,7 @@ This example demonstrates the difference between a policy targeted at a specific
 
 The Terraform files create a user, KVv1 mount, and policy that grants full access to secrets in the `kv/` path.
 
-1. Log in to Vault as `user2a`
+1. Log in to Vault as `user2a` with password "changeme"
     "user2a" is only able to write a secret called "my_secrets" in the root path.
     >
     > ```bash
@@ -27,7 +27,7 @@ The Terraform files create a user, KVv1 mount, and policy that grants full acces
     > vault write kv/my_secrets/secret1 password=P@ssw0rd!
     > ```
     >
-4. Log in to Vault as `user2b`
+4. Log in to Vault as `user2b` with password "changeme"
     "user2b" is able to write secrets in the "my_secrets" folder within the root path.
     >
     > ```bash
