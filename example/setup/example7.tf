@@ -1,19 +1,14 @@
+# Policies for user7
 data "vault_policy_document" "user7" {
   # Admin policy
   rule {
-    path         = "${vault_mount.kv.path}/metadata/"
-    capabilities = ["read", "list"]
-    description  = "allow list on kv"
-  }
-
-  rule {
-    path         = "${vault_mount.kv.path}/metadata/*"
+    path         = "+/metadata/*"
     capabilities = ["read", "list"]
     description  = "allow listing secrets and metadata"
   }
 
   rule {
-    path         = "${vault_mount.kv.path}/subkeys/*"
+    path         = "+/subkeys/*"
     capabilities = ["read"]
     description  = "allow reading of subkeys"
   }
@@ -364,16 +359,4 @@ data "vault_policy_document" "user7" {
 resource "vault_policy" "user7" {
   name   = "admin_policy"
   policy = data.vault_policy_document.user7.hcl
-}
-
-resource "vault_generic_endpoint" "user7" {
-  depends_on = [vault_auth_backend.userpass]
-
-  path                 = "auth/${vault_auth_backend.userpass.path}/users/user7"
-  ignore_absent_fields = true
-
-  data_json = jsonencode({
-    "policies" = ["${vault_policy.user7.name}"],
-    "password" = "changeme"
-  })
 }

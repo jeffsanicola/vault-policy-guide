@@ -1,3 +1,4 @@
+# Policies for user6
 data "vault_policy_document" "user6" {
   # KVv2 policy
   rule {
@@ -40,31 +41,4 @@ data "vault_policy_document" "user6" {
 resource "vault_policy" "user6" {
   name   = "user6_policy"
   policy = data.vault_policy_document.user6.hcl
-}
-
-resource "vault_generic_endpoint" "user6" {
-  depends_on = [vault_auth_backend.userpass]
-  for_each   = toset(var.users)
-
-  path                 = "auth/${vault_auth_backend.userpass.path}/users/${each.key}"
-  ignore_absent_fields = true
-
-  data_json = jsonencode({
-    "policies" = ["${vault_policy.user6.name}"],
-    "password" = "changeme"
-  })
-}
-
-resource "vault_identity_entity" "user6" {
-  # Need to create an Identity Entity so that the name is not randomly generated at first login
-  for_each = vault_generic_endpoint.user6
-  name     = each.key
-}
-
-resource "vault_identity_entity_alias" "user6" {
-  # Tie the Identity Entity to the userpass user
-  for_each       = vault_identity_entity.user6
-  name           = each.key
-  mount_accessor = vault_auth_backend.userpass.accessor
-  canonical_id   = each.value.id
 }
