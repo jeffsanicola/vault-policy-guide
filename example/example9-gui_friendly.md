@@ -41,6 +41,6 @@ A few things to note with this example:
 
 Configure the `list` capability for each level of your hierarchy that needs to be traversed. When the desired path/depth is reached then you can specify paths that contain secret content with more capabilities.
 
-See the following policies in Vault:
+View the policies in Vault:
 
 * users9_policy
