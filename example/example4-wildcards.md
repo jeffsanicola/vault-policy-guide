@@ -117,8 +117,9 @@ The Terraform files create a user, KVv1 mount, and policy that grants varying le
 
 ## Observations
 
-*
-*
+* `*` is a glob character and can only be used at the end of paths
+* `+` is a component specific wildcard and can only be surrounded by `/` (i.e. `"+/.."`, or "`../+`, or `../+/..`)
+* Most specific paths win. A path with `+` at the beginning is less specific than a path with a particular mount defined.
 
 ## Policies
 
@@ -128,4 +129,3 @@ View the policies in Vault:
 * user4b_policy
 * user4c_policy
 * user4d_policy
-*
