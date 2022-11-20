@@ -44,7 +44,7 @@ Policies are written in [HashiCorp Configuration Language](https://golangexample
 Each policy must have a unique name. The name is set when you [write the policy](https://www.vaultproject.io/docs/commands/policy/write#examples).
 
 ```bash
-vault policy write my-policy /tmp/path_to_policy.hcl
+vault policy write my-policy @/tmp/path_to_policy.hcl
 ```
 
 Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) endpoints to be effective. The paths do not need to exist when the policy is written.
@@ -67,13 +67,14 @@ Paths must match valid folders or [API](https://www.vaultproject.io/api-docs) en
 
 ### Capabilities
 
-Capabilities are a superset of CRUD operations:
+[Capabilities](https://developer.hashicorp.com/vault/docs/concepts/policies#capabilities) are a superset of CRUD operations:
 
 - `create` - allows the creation of a resource that doesn't currently exist
 - `read` - allows reading or listing of a particular resource or collection of resources
 - `update` - allows the updating of an already existing resource
 - `delete` - allows the removal of resource
 - `list` - allows for listing the content of a folder
+- `patch` - allows for partial updates to a given endpoint
 - `deny` - disallows access to the endpoint or folder - **avoid using this unless absolutely required**
 - `sudo` - allows for elevating privilege for specific commands (only required in a small subset of endpoints) - As a general rule, eliminate the use of `sudo` in your user policies unless absolutely required.
 
